@@ -1,0 +1,24 @@
+version: "3.7"
+services:
+  mongo_db:
+    build: ./mongodb
+    ports:
+      - "27017:27017"
+    networks:
+      backend_network:
+        ipv4_address: 10.9.0.3
+
+  backend_server: 
+    build: . 
+    ports: 
+      - "8000:8000" 
+    networks:
+      backend_network: 
+        ipv4_address: 10.9.0.2
+
+networks:
+  backend_network:
+    name: backend_network
+    ipam:
+      config: 
+        - subnet: 10.9.0.0/24
