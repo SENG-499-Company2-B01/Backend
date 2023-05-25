@@ -25,9 +25,9 @@ services:
 
 secrets:
   db_password: 
-    file: db_password.txt 
+    file: .mongo_pw
   db_username: 
-    file: db_user.txt
+    file: .mongo_user
 
 networks:
   backend_network:
