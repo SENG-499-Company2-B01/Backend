@@ -1,7 +1,14 @@
 version: "3.7"
 services:
   mongo_db:
-    build: ./mongodb
+    build: ./mongodb 
+    environment:
+      MONGO_INITDB_ROOT_USERNAME_FILE: /run/secrets/db_username 
+      MONGO_INITDB_ROOT_PASSWORD_FILE: /run/secrets/db_password 
+      MONGO_INITDB_DATABASE: schedule_db
+    secrets: 
+      - db_username 
+      - db_password
     ports:
       - "27017:27017"
     networks:
@@ -14,7 +21,13 @@ services:
       - "8000:8000" 
     networks:
       backend_network: 
-        ipv4_address: 10.9.0.2
+        ipv4_address: 10.9.0.2 
+
+secrets:
+  db_password: 
+    file: db_password.txt 
+  db_username: 
+    file: db_user.txt
 
 networks:
   backend_network:
