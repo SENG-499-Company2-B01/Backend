@@ -1,6 +1,4 @@
-db = db.getSiblingDB("admin") 
-db.auth("admin","admin") 
-db = db.getSiblingDB("schedule_db") 
+db = db.getSiblingDB("schedule_db")
 
 db.createUser({ 
     user: "user", 
