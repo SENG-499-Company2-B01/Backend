@@ -1,4 +1,4 @@
 *.txt 
 *.exe
-*.mongo_pw 
-*.mongo_user
+.env
+*.vscode
