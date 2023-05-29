@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 
 	// "encoding/json"
 	// "fmt"
@@ -10,19 +11,18 @@ import (
 	"os"
 	"path/filepath"
 
+	"backend/modules/schedules"
+	"backend/modules/users"
+
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-
-	// "go.mongodb.org/mongo-driver/bson"
-
-	c "main_api/Modules/Courses"
 )
 
 var client *mongo.Client
 
-func initDB() {
+func init() {
 	// Get the current working directory
 	var err error
 	dir, err := os.Getwd()
@@ -70,15 +70,64 @@ func initDB() {
 
 func handleRequests() {
 	router := mux.NewRouter()
-	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) { w.WriteHeader(http.StatusOK) }).Methods(http.MethodGet)
 
-	cm := c.CourseModule{}
-	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
-		cm.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	// // Example handle request
+	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
+
+	// Users CRUD Operations
+	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		users.GetUsers(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
+		users.GetUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
+		users.UpdateUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPut)
+
+	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
+		users.DeleteUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodDelete)
+
+	// Schedules CRUD Operations
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.CreateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodPut)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodDelete)
+
+	// Courses CRUD Operations
+
+	// Classroom CRUD Operations
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
+
+// // Example Endpoint
+// func homePage(w http.ResponseWriter, r *http.Request) {
+// 	fmt.Fprintf(w, "Welcome to the HomePage!")
+// 	fmt.Println("Endpoint Hit: homePage")
+// }
 
 func main() {
 	initDB()
