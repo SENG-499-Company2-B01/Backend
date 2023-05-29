@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"backend/modules/users"
+	"backend/modules/schedules"
 
 	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
@@ -91,7 +92,25 @@ func handleRequests() {
 	}).Methods(http.MethodDelete)
 
 	// Schedules CRUD Operations
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.CreateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodPost)
 
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodPut)
+
+	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodDelete)
 
 	// Courses CRUD Operations
 
