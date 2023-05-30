@@ -79,9 +79,20 @@ func handleRequests() {
 		courses.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodPost)
 	
-	router.HandleFunc("/course/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
 		courses.GetCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
+		courses.GetCourses(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodGet)
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+		courses.DeleteCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodDelete)
+	
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+		courses.UpdateCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodPut)
 
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
