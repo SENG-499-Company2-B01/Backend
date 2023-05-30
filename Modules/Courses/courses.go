@@ -6,16 +6,42 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type Course struct {
-	ShortHand     string   `json:"shorth" bson:"shorthand"`
+	ShortHand     string   `json:"shorthand" bson:"shorthand"`
 	Name          string   `json:"name" bson:"name"`
 	Equipements   []string `json:"equipment" bson:"equipements"`
 	Prerequisites []string `json:"prerequisites" bson:"prerequisites"`
+}
+
+func GetCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+
+	// Extract the user username from the URL path
+	path := r.URL.Path
+	courseShortHand := strings.TrimPrefix(path, "/course/")
+	// CHECK if shorthand is ABC101 format
+	if !hasThreeConsecutiveNumerics(courseShortHand) {
+		http.Error(w, "Invalid Course shorthand", http.StatusBadRequest)
+		return
+	}
+
+	// CHECK if course doesn't exist
+	var result Course
+	filter := bson.D{{"shorthand", courseShortHand}}
+	err := collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err != nil {
+		http.Error(w, "Error while finding the course, "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	// Send a response
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(result)
 }
 
 func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
