@@ -19,7 +19,7 @@ type Classroom struct {
 	AvailableEquipment []string
 }
 
-// CreateSchedule handles the creation of a new classroom
+// CreateClassroom handles the creation of a new classroom
 func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
 	fmt.Println("CreateClassroom function called.")
 
@@ -89,7 +89,7 @@ func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mong
 func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
 	fmt.Println("GetClassrooms function called.")
 
-	// Define an empty slice to store the schedules
+	// Define an empty slice to store the classrooms
 	var classrooms []Classroom
 
 	// Retrieve all documents from the MongoDB collection
@@ -97,7 +97,7 @@ func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mon
 	if err != nil {
 		// If there is an error retrieving classrooms,
 		// log the error and return an internal server error response
-		fmt.Println("Error retrieving schedules:", err)
+		fmt.Println("Error retrieving classrooms:", err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
@@ -170,7 +170,7 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	fmt.Fprintf(w, "Classroom updated successfully")
 }
 
-// DeleteSchedule handles the deletion of a classroom
+// DeleteClassroom handles the deletion of a classroom
 func DeleteClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
 	fmt.Println("DeleteClassroom function called.")
 

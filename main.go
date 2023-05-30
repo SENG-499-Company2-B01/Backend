@@ -44,8 +44,6 @@ func init() {
 	mongoAddress := os.Getenv("MONGO_ADDRESS")
 	mongoPort := os.Getenv("MONGO_PORT")
 
-	log.Println("I am here")
-
 	// Set up the MongoDB client with SCRAM-SHA-1 authentication
 	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
 		SetAuth(options.Credential{
