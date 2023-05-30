@@ -3,17 +3,15 @@ package main
 import (
 	"context"
 	"log"
-	"net/http"
 	"os"
+	"net/http"
 	"path/filepath"
 
-	"backend/modules/schedules"
 	"backend/modules/users"
+	"backend/modules/schedules"
 
-	"backend/modules/classrooms"
-
-	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
+	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -47,8 +45,8 @@ func init() {
 	// Set up the MongoDB client with SCRAM-SHA-1 authentication
 	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
 		SetAuth(options.Credential{
-			Username:      mongoUsername,
-			Password:      mongoPassword,
+			Username:   mongoUsername,
+			Password:   mongoPassword,
 			AuthMechanism: "SCRAM-SHA-256",
 		})
 
@@ -116,26 +114,9 @@ func handleRequests() {
 
 	// Courses CRUD Operations
 
+
 	// Classroom CRUD Operations
-	router.HandleFunc("/classrooms", func(w http.ResponseWriter, r *http.Request) {
-		classrooms.CreateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
-	}).Methods(http.MethodPost)
 
-	router.HandleFunc("/classrooms/{classroom}", func(w http.ResponseWriter, r *http.Request) {
-		classrooms.GetClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
-	}).Methods(http.MethodGet)
-
-	router.HandleFunc("/classrooms", func(w http.ResponseWriter, r *http.Request) {
-		classrooms.GetClassrooms(w, r, client.Database("schedule_db").Collection("classrooms"))
-	}).Methods(http.MethodGet)
-
-	router.HandleFunc("/classrooms/{classroom}", func(w http.ResponseWriter, r *http.Request) {
-		classrooms.UpdateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
-	}).Methods(http.MethodPut)
-
-	router.HandleFunc("/classrooms/{classroom}", func(w http.ResponseWriter, r *http.Request) {
-		classrooms.DeleteClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
-	}).Methods(http.MethodDelete)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
