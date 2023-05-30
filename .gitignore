@@ -2,3 +2,6 @@
 *.exe
 .env
 *.vscode
+.mongo_pw
+.mongo_user
+.gitignore
