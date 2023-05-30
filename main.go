@@ -2,16 +2,20 @@ package main
 
 import (
 	"context"
+
+	// "encoding/json"
+	// "fmt"
 	"log"
-	"os"
 	"net/http"
+	"os"
 	"path/filepath"
 
-	"backend/modules/users"
+	"backend/modules/courses"
 	"backend/modules/schedules"
+	"backend/modules/users"
 
-	"github.com/joho/godotenv"
 	"github.com/gorilla/mux"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -45,8 +49,8 @@ func init() {
 	// Set up the MongoDB client with SCRAM-SHA-1 authentication
 	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
 		SetAuth(options.Credential{
-			Username:   mongoUsername,
-			Password:   mongoPassword,
+			Username:      mongoUsername,
+			Password:      mongoPassword,
 			AuthMechanism: "SCRAM-SHA-256",
 		})
 
@@ -69,6 +73,26 @@ func handleRequests() {
 
 	// // Example handle request
 	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
+
+	// Courses CRUD Operations
+	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
+		courses.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodPost)
+	
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+		courses.GetCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
+		courses.GetCourses(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodGet)
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+		courses.DeleteCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodDelete)
+	
+	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
+		courses.UpdateCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodPut)
 
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
@@ -114,9 +138,7 @@ func handleRequests() {
 
 	// Courses CRUD Operations
 
-
 	// Classroom CRUD Operations
-
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
