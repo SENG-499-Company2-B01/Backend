@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"backend/modules/classrooms"
 	"backend/modules/courses"
 	"backend/modules/schedules"
 	"backend/modules/users"
@@ -78,7 +79,7 @@ func handleRequests() {
 	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
 		courses.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodPost)
-	
+
 	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
 		courses.GetCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodGet)
@@ -89,7 +90,7 @@ func handleRequests() {
 	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
 		courses.DeleteCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodDelete)
-	
+
 	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
 		courses.UpdateCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodPut)
@@ -139,6 +140,25 @@ func handleRequests() {
 	// Courses CRUD Operations
 
 	// Classroom CRUD Operations
+	router.HandleFunc("/classrooms", func(w http.ResponseWriter, r *http.Request) {
+		classrooms.CreateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
+	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+		classrooms.GetClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/classrooms", func(w http.ResponseWriter, r *http.Request) {
+		classrooms.GetClassrooms(w, r, client.Database("schedule_db").Collection("classrooms"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+		classrooms.UpdateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
+	}).Methods(http.MethodPut)
+
+	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+		classrooms.DeleteClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
+	}).Methods(http.MethodDelete)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
