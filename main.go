@@ -5,12 +5,12 @@ import (
 
 	// "encoding/json"
 	// "fmt"
-	"context"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 
+	"backend/modules/courses"
 	"backend/modules/schedules"
 	"backend/modules/users"
 
@@ -74,6 +74,11 @@ func handleRequests() {
 	// // Example handle request
 	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
 
+	// Courses CRUD Operations
+	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
+		courses.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
+	}).Methods(http.MethodPost)
+
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
@@ -130,6 +135,5 @@ func handleRequests() {
 // }
 
 func main() {
-	initDB()
 	handleRequests()
 }

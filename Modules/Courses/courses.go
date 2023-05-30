@@ -1,24 +1,24 @@
-package Courses
+package courses
 
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"regexp"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-type CourseModule struct{}
-
 type Course struct {
-	ShortHand     string   `json:"shorth"`
-	Name          string   `json:"name"`
-	Equipements   []string `json:"equipment"`
-	Prerequisites []string `json:"prerequisites"`
+	ShortHand     string   `json:"shorth" bson:"shorthand"`
+	Name          string   `json:"name" bson:"name"`
+	Equipements   []string `json:"equipment" bson:"equipements"`
+	Prerequisites []string `json:"prerequisites" bson:"prerequisites"`
 }
 
-func (cm CourseModule) CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	var newCourse Course
 	err := json.NewDecoder(r.Body).Decode(&newCourse)
 	if err != nil {
@@ -26,15 +26,29 @@ func (cm CourseModule) CreateCourse(w http.ResponseWriter, r *http.Request, coll
 		return
 	}
 
+	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(newCourse.ShortHand) {
-		http.Error(w, "Invalid Course shorthand"+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Invalid Course shorthand", http.StatusBadRequest)
+		return
+	}
+
+	// CHECK if course doesn't exist
+	var result Course
+	filter := bson.D{{"shorthand", newCourse.ShortHand}}
+	err = collection.FindOne(context.TODO(), filter).Decode(&result)
+	if err == nil && result.ShortHand != "" {
+		http.Error(w, fmt.Sprintf("Error: %s course already exists", result.ShortHand), http.StatusInternalServerError)
+		return
+	}
+	if err != nil && err != mongo.ErrNoDocuments {
+		http.Error(w, "Error while checking for duplicate document, " + err.Error(), http.StatusInternalServerError)
 		return
 	}
 
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newCourse)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error while inserting course into DB" + err.Error(), http.StatusInternalServerError)
 		return
 	}
 
