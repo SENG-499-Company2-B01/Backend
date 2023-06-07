@@ -3,17 +3,17 @@ package main
 import (
 	"context"
 
-	// "encoding/json"
-	// "fmt"
 	"log"
+	// "fmt"
 	"net/http"
 	"os"
 	"path/filepath"
 
-	"backend/modules/classrooms"
-	"backend/modules/courses"
-	"backend/modules/schedules"
-	"backend/modules/users"
+	"github.com/SENG-499-Company2-B01/Backend/logger"
+	"github.com/SENG-499-Company2-B01/Backend/modules/classrooms"
+	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
+	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
+	"github.com/SENG-499-Company2-B01/Backend/modules/users"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -24,13 +24,23 @@ import (
 var client *mongo.Client
 
 func init() {
-	// Get the current working directory
+	// Initialize the logger
 	var err error
+	err = logger.InitLogger(os.Stdout, os.Stdout, os.Stderr)
+	if err != nil {
+		// log.Fatal("Error initializing logger:", err)
+		logger.Error(err)
+		return
+	}
+
+	// Print a success message to the console
+	logger.Info("Logger initialized successfully!")
+
+	// Get the current working directory
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Error getting current working directory:", err)
 	}
-	log.Println("Current working directory:", dir)
 
 	// Construct the path to the .env file
 	envPath := filepath.Join(dir, ".env")
@@ -66,7 +76,7 @@ func init() {
 		log.Fatal(err)
 	}
 
-	log.Println("Connected to MongoDB!")
+	logger.Info("Connected to MongoDB successfully!")
 }
 
 func handleRequests() {
@@ -137,8 +147,6 @@ func handleRequests() {
 		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
 	}).Methods(http.MethodDelete)
 
-	// Courses CRUD Operations
-
 	// Classroom CRUD Operations
 	router.HandleFunc("/classrooms", func(w http.ResponseWriter, r *http.Request) {
 		classrooms.CreateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
@@ -170,5 +178,11 @@ func handleRequests() {
 // }
 
 func main() {
+	// // Example Logging messages
+	// logger.Info("This is an info message")
+	// logger.Warning("This is a warning message")
+	// logger.Error(fmt.Errorf("This is an error message"))
+	
+
 	handleRequests()
 }
