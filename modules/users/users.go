@@ -18,6 +18,7 @@ type User struct {
 	Password 		string `json:"password"`
 	Firstname   	string `json:"firstname"`
 	LastName 		string `json:"lastname"`
+	IsAdmin 		bool 	`json:"isAdmin"`
 	Preferences   	map[string]string   `json:"preferences"`
 	Qualifications 	[]string            `json:"qualifications"`
 }

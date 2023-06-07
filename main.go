@@ -75,6 +75,11 @@ func handleRequests() {
 	// // Example handle request
 	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
 
+	// AUTHENTICATION
+	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+
 	// Courses CRUD Operations
 	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
 		courses.CreateCourse(w, r, client.Database("schedule_db").Collection("courses"))
