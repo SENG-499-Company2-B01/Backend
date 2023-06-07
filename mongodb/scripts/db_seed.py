@@ -2,10 +2,23 @@ import pandas as pd
 from pymongo import MongoClient 
 from dotenv import load_dotenv
 from pathlib import Path 
-import os
+import os 
 
+def check_if_not_empty(coll,coll_name):  
 
-def load_users(coll,admin_1,admin_2):  
+    if coll.count_documents({}) > 0: 
+
+        print("INFO: Data found in %s collection ... skipping inserting data in this collection" %(coll_name)) 
+        return True  
+    
+    print("INFO: No data found in %s collection ... inserting data" %(coll_name))
+    return False
+
+def load_users(coll,admin_1,admin_2): 
+
+    if check_if_not_empty(coll,'users'): 
+        return 
+
 
     users_df = pd.read_csv("../data/users.csv") 
 
@@ -33,6 +46,9 @@ def load_users(coll,admin_1,admin_2):
 
 def load_courses(coll):  
 
+    if check_if_not_empty(coll,'courses'):
+        return  
+
     courses_df = pd.read_csv("../data/courses.csv")  
 
     for index, row in courses_df.iterrows(): 
@@ -49,7 +65,9 @@ def load_courses(coll):
     return 
 
 
-def load_classrooms(coll):  
+def load_classrooms(coll): 
+    if check_if_not_empty(coll,'classrooms'): 
+        return   
 
     classrooms_df = pd.read_csv("../data/classrooms.csv")  
 
@@ -80,11 +98,12 @@ def db_seed():
     admin_2 = os.getenv("ADMIN_2")
 
     conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_ip+':'+mongo_port+'/')
-    db = conn['schedule_db']  
+    db = conn['schedule_db']
 
     user_collection = db['users']  
     courses_collection = db['courses'] 
     classrooms_collection = db['classrooms']
+
 
     load_users(user_collection,admin_1,admin_2) 
     load_courses(courses_collection) 
