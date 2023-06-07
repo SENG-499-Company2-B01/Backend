@@ -5,10 +5,7 @@ from pathlib import Path
 import os
 
 
-ADMIN_1 = 'rich.little' 
-ADMIN_2 = 'dan.mai'
-
-def load_users(coll):  
+def load_users(coll,admin_1,admin_2):  
 
     users_df = pd.read_csv("../data/users.csv") 
 
@@ -21,7 +18,7 @@ def load_users(coll):
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
 
-        if user['username'].lower() == ADMIN_1 or user['username'].lower() == ADMIN_2:
+        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
         else: 
             user['isAdmin'] = False
@@ -31,15 +28,8 @@ def load_users(coll):
 
         coll.insert_one(user)
 
-    return 
+    return
 
-
-# type Course struct {
-# 	ShortHand     string   `json:"shorthand" bson:"shorthand"`
-# 	Name          string   `json:"name" bson:"name"`
-# 	Equipements   []string `json:"equipment" bson:"equipements"`
-# 	Prerequisites []string `json:"prerequisites" bson:"prerequisites"`
-# }
 
 def load_courses(coll):  
 
@@ -55,14 +45,24 @@ def load_courses(coll):
         course['prerequisites'] = [] 
 
         coll.insert_one(course) 
-        
+
     return 
 
 
-def load_classrooms():  
+def load_classrooms(coll):  
 
-    classrooms_df = pd.read_csv("../data/classrooms.csv") 
+    classrooms_df = pd.read_csv("../data/classrooms.csv")  
 
+    for index, row in classrooms_df.iterrows(): 
+
+        classroom = {} 
+        classroom['shorthand'] = row['Shorthand'] 
+        classroom['building'] = row['Building Name'] 
+        classroom['capacity'] = row['Capacity'] 
+        classroom['room_number'] = row['Room Number'] 
+        classroom['Equipment'] = []  
+
+        coll.insert_one(classroom)
 
     return
 
@@ -75,16 +75,20 @@ def db_seed():
     mongo_user = os.getenv("MONGO_USERNAME")
     mongo_pw = os.getenv("MONGO_PASSWORD")
     mongo_ip = os.getenv("MONGO_ADDRESS")
-    mongo_port = os.getenv("MONGO_PORT") 
+    mongo_port = os.getenv("MONGO_PORT")  
+    admin_1 = os.getenv("ADMIN_1") 
+    admin_2 = os.getenv("ADMIN_2")
 
     conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_ip+':'+mongo_port+'/')
     db = conn['schedule_db']  
 
     user_collection = db['users']  
-    courses_collection = db['courses']
+    courses_collection = db['courses'] 
+    classrooms_collection = db['classrooms']
 
-    load_users(user_collection) 
-    load_courses(courses_collection)
+    load_users(user_collection,admin_1,admin_2) 
+    load_courses(courses_collection) 
+    load_classrooms(classrooms_collection)
 
 if __name__ == "__main__": 
     db_seed()
