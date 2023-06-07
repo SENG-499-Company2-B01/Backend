@@ -12,7 +12,10 @@ import os
 # 	LastName 		string `json:"lastname"`
 # 	Preferences   	map[string]string   `json:"preferences"`
 # 	Qualifications 	[]string            `json:"qualifications"`
-# }
+# } 
+
+ADMIN_1 = 'rich.little' 
+ADMIN_2 = 'dan.mai'
 
 def load_users(coll):  
 
@@ -26,11 +29,16 @@ def load_users(coll):
         user['password'] = '' 
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
-        user['prefrences'] = [] 
-        user['qualifications'] = row['Credentials'] 
 
+        if user['username'].lower() == ADMIN_1 or user['username'].lower() == ADMIN_2:
+            user['isAdmin'] = True
+        else: 
+            user['isAdmin'] = False
+
+        user['prefrences'] = []
+        user['qualifications'] = row['Credentials']  
+        
         coll.insert_one(user)
-
 
     return 
 
