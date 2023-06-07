@@ -4,15 +4,6 @@ from dotenv import load_dotenv
 from pathlib import Path 
 import os
 
-# type User struct {
-# 	Username 		string `json:"username"`
-# 	Email    		string `json:"email"`
-# 	Password 		string `json:"password"`
-# 	Firstname   	string `json:"firstname"`
-# 	LastName 		string `json:"lastname"`
-# 	Preferences   	map[string]string   `json:"preferences"`
-# 	Qualifications 	[]string            `json:"qualifications"`
-# } 
 
 ADMIN_1 = 'rich.little' 
 ADMIN_2 = 'dan.mai'
@@ -37,17 +28,34 @@ def load_users(coll):
 
         user['prefrences'] = []
         user['qualifications'] = row['Credentials']  
-        
+
         coll.insert_one(user)
 
     return 
 
 
-def load_courses():  
+# type Course struct {
+# 	ShortHand     string   `json:"shorthand" bson:"shorthand"`
+# 	Name          string   `json:"name" bson:"name"`
+# 	Equipements   []string `json:"equipment" bson:"equipements"`
+# 	Prerequisites []string `json:"prerequisites" bson:"prerequisites"`
+# }
 
-    courses_df = pd.read_csv("../data/courses.csv") 
+def load_courses(coll):  
 
+    courses_df = pd.read_csv("../data/courses.csv")  
 
+    for index, row in courses_df.iterrows(): 
+
+        course = {} 
+        course['shorthand'] = row['Course'] 
+        course['name'] = row['Name'] 
+        course['offered'] = row['Offered'] 
+        course['equipment'] = [] 
+        course['prerequisites'] = [] 
+
+        coll.insert_one(course) 
+        
     return 
 
 
@@ -70,10 +78,13 @@ def db_seed():
     mongo_port = os.getenv("MONGO_PORT") 
 
     conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_ip+':'+mongo_port+'/')
-    db = conn['schedule_db'] 
-    user_collection = db['users'] 
+    db = conn['schedule_db']  
 
-    load_users(user_collection)
+    user_collection = db['users']  
+    courses_collection = db['courses']
+
+    load_users(user_collection) 
+    load_courses(courses_collection)
 
 if __name__ == "__main__": 
     db_seed()
