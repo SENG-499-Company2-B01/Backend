@@ -1,7 +1,6 @@
 import pandas as pd  
 from pymongo import MongoClient 
 from dotenv import load_dotenv
-from pathlib import Path 
 import os 
 
 def check_if_not_empty(coll,coll_name):  
@@ -20,7 +19,7 @@ def load_users(coll,admin_1,admin_2):
         return 
 
 
-    users_df = pd.read_csv("../data/users.csv") 
+    users_df = pd.read_csv("users.csv") 
 
     for index, row in users_df.iterrows():
 
@@ -49,7 +48,7 @@ def load_courses(coll):
     if check_if_not_empty(coll,'courses'):
         return  
 
-    courses_df = pd.read_csv("../data/courses.csv")  
+    courses_df = pd.read_csv("courses.csv")  
 
     for index, row in courses_df.iterrows(): 
 
@@ -66,10 +65,11 @@ def load_courses(coll):
 
 
 def load_classrooms(coll): 
+     
     if check_if_not_empty(coll,'classrooms'): 
         return   
 
-    classrooms_df = pd.read_csv("../data/classrooms.csv")  
+    classrooms_df = pd.read_csv("classrooms.csv")  
 
     for index, row in classrooms_df.iterrows(): 
 
@@ -87,8 +87,7 @@ def load_classrooms(coll):
 
 def db_seed():
 
-    dotenv_path = Path('../../.env')
-    load_dotenv(dotenv_path=dotenv_path)  
+    load_dotenv()
 
     mongo_user = os.getenv("MONGO_USERNAME")
     mongo_pw = os.getenv("MONGO_PASSWORD")
