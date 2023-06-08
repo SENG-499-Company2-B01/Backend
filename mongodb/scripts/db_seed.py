@@ -19,7 +19,8 @@ def load_users(coll,admin_1,admin_2):
         return 
 
 
-    users_df = pd.read_csv("users.csv") 
+    users_df = pd.read_csv("users.csv").fillna('')
+    users_df = users_df.astype({'Credentials':'string'})
 
     for index, row in users_df.iterrows():
 
@@ -35,8 +36,13 @@ def load_users(coll,admin_1,admin_2):
         else: 
             user['isAdmin'] = False
 
-        user['prefrences'] = []
-        user['qualifications'] = row['Credentials']  
+        user['prefrences'] = []  
+
+        # Convert qualifications string to array of strings 
+      
+        string_qualifications = row['Credentials'].replace("[","").replace("]","")
+        qualifications = string_qualifications.split(",")
+        user['qualifications'] = qualifications
 
         coll.insert_one(user)
 
@@ -65,7 +71,7 @@ def load_courses(coll):
 
 
 def load_classrooms(coll): 
-     
+
     if check_if_not_empty(coll,'classrooms'): 
         return   
 
