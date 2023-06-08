@@ -150,6 +150,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		return
 	}
 
+	// isAdmin cannot be updated
+	if requestBody["isAdmin"] != nil {
+		http.Error(w, "isAdmin Field cannot be updated", http.StatusInternalServerError)
+		return
+	}
+
 	// Construct the update query
 	update := bson.M{"$set": requestBody}
 
