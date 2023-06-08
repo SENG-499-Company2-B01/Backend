@@ -22,7 +22,6 @@ type Classroom struct {
 
 // CreateClassroom handles the creation of a new classroom
 func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("CreateClassroom function called.")
 
 	// Parse r body into Classroom struct
 	var newClassroom Classroom
@@ -63,7 +62,6 @@ func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 }
 
 func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassroom function called.")
 
 	// Parse r params
 	vars := mux.Vars(r)
@@ -106,7 +104,6 @@ func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 }
 
 func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassrooms function called.")
 
 	// Define an empty slice to store the classrooms
 	var classrooms []Classroom
@@ -150,7 +147,6 @@ func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Col
 }
 
 func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("UpdateClassrooms function called.")
 
 	// Parse request params
 	vars := mux.Vars(r)
@@ -165,8 +161,9 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 		return
 	}
 
+	room, _ := strconv.Atoi(room_number)
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter := bson.M{"shorthand": shorthand, "room_number": room}
 
 	// Parse r body into a map
 	var requestBody map[string]interface{}
@@ -197,7 +194,6 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 // DeleteClassroom handles the deletion of a classroom
 func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("DeleteClassroom function called.")
 
 	// Parse request params
 	vars := mux.Vars(r)
@@ -212,8 +208,9 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 		return
 	}
 
+	room, _ := strconv.Atoi(room_number)
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter := bson.M{"shorthand": shorthand, "room_number": room}
 
 	_, err := collection.DeleteOne(context.TODO(), filter)
 

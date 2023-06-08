@@ -73,7 +73,7 @@ func TestGetClassrooms(t *testing.T, executeRequest func(req *http.Request) *htt
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	req, _ = http.NewRequest("GET", "/classrooms/Test/12", nil)
+	req, _ = http.NewRequest("GET", "/classrooms", nil)
 	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
@@ -109,7 +109,7 @@ func TestGetClassroom(t *testing.T, executeRequest func(req *http.Request) *http
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, insert_response.Code)
 	}
 
-	get, _ := http.NewRequest("GET", "/classrooms/Test/4", nil)
+	get, _ := http.NewRequest("GET", "/classrooms/Test/2", nil)
 	get_response := executeRequest(get)
 
 	if get_response.Code != http.StatusOK {
@@ -149,6 +149,12 @@ func TestDeleteClassroom(t *testing.T, executeRequest func(req *http.Request) *h
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
+
+	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
+
+	t.Cleanup(func() {
+		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter)
+	})
 }
 
 func TestUpdateClassroom(t *testing.T, executeRequest func(req *http.Request) *httptest.ResponseRecorder, client *mongo.Client) {
@@ -173,20 +179,30 @@ func TestUpdateClassroom(t *testing.T, executeRequest func(req *http.Request) *h
 
 	var n2Classroom = classrooms.Classroom{}
 
+	n2Classroom = nClassroom
+
 	n2Classroom.Building = "Test Building updated"
 	requestBody, _ = json.Marshal(n2Classroom)
 	payload = []byte(requestBody)
-	req, _ = http.NewRequest("PUT", "/classrooms/TEST/4", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("PUT", "/classrooms/Test/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	req, _ = http.NewRequest("GET", "/classrooms", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("GET", "/classrooms/Test/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
+	}
+
+	var getClassroom = classrooms.Classroom{}
+
+	json.Unmarshal([]byte(response.Body.String()), &getClassroom)
+
+	if getClassroom.Building != "Test Building updated" {
+		t.Errorf("Expected response body to be %s. Got %s\n", "Test Building updated", getClassroom.Building)
 	}
 
 	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}

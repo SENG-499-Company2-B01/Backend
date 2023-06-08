@@ -1,6 +1,7 @@
 package main
 
 import (
+	"backend/tests/classrooms"
 	"context"
 	"net/http"
 	"net/http/httptest"
