@@ -80,6 +80,12 @@ func init() {
 }
 
 func handleUserRequests(router *mux.Router) {
+
+	// AUTHENTICATION
+	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+	
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))

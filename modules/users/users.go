@@ -13,14 +13,14 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username       string            `json:"username"`
-	Email          string            `json:"email"`
-	Password       string            `json:"password"`
-	Firstname      string            `json:"firstname"`
-	LastName       string            `json:"lastname"`
-	IsAdmin        bool              `json:"isAdmin"`
-	Preferences    map[string]string `json:"preferences"`
-	Qualifications []string          `json:"qualifications"`
+	Username 		string `json:"username"`
+	Email    		string `json:"email"`
+	Password 		string `json:"password"`
+	Firstname   	string `json:"firstname"`
+	LastName 		string `json:"lastname"`
+	IsAdmin 		bool 	`json:"-"`
+	Preferences   	map[string]string   `json:"preferences"`
+	Qualifications 	[]string            `json:"qualifications"`
 }
 
 // CreateUser handles the creation of a new user
@@ -36,6 +36,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// by default IsAdmin is supposed to be set to false
+	newUser.IsAdmin = false
 
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newUser)
@@ -147,6 +150,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		// If there is an error decoding the request body,
 		// return a bad request response
 		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// isAdmin cannot be updated
+	if requestBody["isAdmin"] != nil {
+		http.Error(w, "isAdmin Field cannot be updated", http.StatusInternalServerError)
 		return
 	}
 
