@@ -3,9 +3,9 @@ package users
 import (
 	"context"
 	"encoding/json"
-	"strings"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,6 +20,7 @@ type User struct {
 	Password 		string `json:"password"`
 	Firstname   	string `json:"firstname"`
 	LastName 		string `json:"lastname"`
+	IsAdmin 		bool 	`json:"-"`
 	Preferences   	map[string]string   `json:"preferences"`
 	Qualifications 	[]string            `json:"qualifications"`
 }
@@ -27,7 +28,7 @@ type User struct {
 // CreateUser handles the creation of a new user
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("CreateUser function called.")
-	
+
 	// Parse request body into User struct
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
@@ -39,10 +40,13 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		return
 	}
 
+	// by default IsAdmin is supposed to be set to false
+	newUser.IsAdmin = false
+
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newUser)
 	if err != nil {
-		// If there is an error inserting the user into the collection, 
+		// If there is an error inserting the user into the collection,
 		// log the error and return an internal server error response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -64,7 +68,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 	// Retrieve all documents from the MongoDB collection
 	cursor, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
-		// If there is an error retrieving users, 
+		// If there is an error retrieving users,
 		// log the error and return an internal server error response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -77,7 +81,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 		var user User
 		err := cursor.Decode(&user)
 		if err != nil {
-			// If there is an error decoding a user document, 
+			// If there is an error decoding a user document,
 			// log the error and return an internal server error response
 			logger.Error(err)
 			http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -88,7 +92,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 
 	// Check for any errors during cursor iteration
 	if err := cursor.Err(); err != nil {
-		// If there is an error iterating through the cursor, 
+		// If there is an error iterating through the cursor,
 		// log the error and return an internal server error response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -115,12 +119,12 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			// If the user is not found, 
+			// If the user is not found,
 			// log the error and return a not found response
 			logger.Error(fmt.Errorf("User not found"))
 			http.Error(w, "User not found", http.StatusNotFound)
 		} else {
-			// If there is an error retrieving the user, 
+			// If there is an error retrieving the user,
 			// log the error and return an internal server error response
 			logger.Error(fmt.Errorf("Error getting user"))
 			http.Error(w, "Error getting user", http.StatusInternalServerError)
@@ -136,7 +140,7 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 // UpdateUser handles updating an existing user
 func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("UpdateUser function called.")
-	
+
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")
@@ -159,6 +163,12 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		return
 	}
 
+	// isAdmin cannot be updated
+	if requestBody["isAdmin"] != nil {
+		http.Error(w, "isAdmin Field cannot be updated", http.StatusInternalServerError)
+		return
+	}
+
 	// Construct the update query
 	update := bson.M{"$set": requestBody}
 
@@ -166,7 +176,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	filter := bson.M{"username": username}
 	_, err = collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		// If there is an error updating the user in the collection, 
+		// If there is an error updating the user in the collection,
 		// log the error and return an internal server error response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -181,7 +191,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 // DeleteUser handles the deletion of a user
 func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("DeleteUser function called.")
-	
+  
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")
@@ -198,7 +208,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	filter := bson.M{"username": username}
 	_, err := collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
-		// If there is an error deleting the user from the collection, 
+		// If there is an error deleting the user from the collection,
 		// log the error and return an internal server error response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusInternalServerError)
