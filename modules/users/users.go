@@ -18,7 +18,7 @@ type User struct {
 	Password 		string `json:"password"`
 	Firstname   	string `json:"firstname"`
 	LastName 		string `json:"lastname"`
-	IsAdmin 		bool 	`json:"isAdmin"`
+	IsAdmin 		bool 	`json:"-"`
 	Preferences   	map[string]string   `json:"preferences"`
 	Qualifications 	[]string            `json:"qualifications"`
 }
@@ -36,6 +36,9 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+
+	// by default IsAdmin is supposed to be set to false
+	newUser.IsAdmin = false
 
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newUser)

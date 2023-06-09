@@ -5,10 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
-	"time"
 
-	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -43,18 +40,8 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 		return
 	}
 
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["expiry"] = time.Now().Add(48 * time.Hour)
-	claims["authorized"] = true
-	claims["email"] = signInReq.Email
-	claims["isAdmin"] = signInReq.IsAdmin
-
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
-	if err != nil {
-		http.Error(w, "Error while making JWT token" + err.Error(), http.StatusNotFound)
-		return
-	}
+	// TODO: need to return an actual JWT token with expiry, user email and isAdmin
+	tokenString := "DUMMY_JWT"
 
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
