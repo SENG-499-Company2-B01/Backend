@@ -21,6 +21,8 @@ services:
       - .env
     ports:
       - "8000:8000"
+    volumes:
+      - ./logs:/go/src/app/logs  # Mount the logs directory
     networks:
       backend_network:
         ipv4_address: 10.9.0.2 

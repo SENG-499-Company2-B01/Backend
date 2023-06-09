@@ -7,6 +7,7 @@ import (
 	"strings"
 	"testing"
 	"fmt"
+	"time"
 
 	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
@@ -16,10 +17,10 @@ func TestLoggerInfo(t *testing.T) {
 	var buf bytes.Buffer
 
 	// Initialize the logger with the buffer as the output
-	logger.InitLogger(&buf, &buf, &buf)
+	logger.InitLogger(&buf, &buf, &buf, nil)
 
 	// Test Info
-	expectedInfo := "\033[1;34m[INFO]\033[0m TestInfoMessage"
+	expectedInfo := fmt.Sprintf("%s \033[1;34m[INFO]\033[0m      TestInfoMessage", getTimestamp())
 	logger.Info("TestInfoMessage")
 
 	// Verify Info log message
@@ -36,10 +37,10 @@ func TestLoggerWarning(t *testing.T) {
 	var buf bytes.Buffer
 
 	// Initialize the logger with the buffer as the output
-	logger.InitLogger(&buf, &buf, &buf)
+	logger.InitLogger(&buf, &buf, &buf, nil)
 
 	// Test Warning
-	expectedWarning := "\033[1;33m[WARNING]\033[0m logger_test.go:43 TestWarningMessage"
+	expectedWarning := fmt.Sprintf("%s \033[1;33m[WARNING]\033[0m   logger_test.go:44 | TestWarningMessage", getTimestamp())
 	logger.Warning("TestWarningMessage")
 
 	// Verify Warning log message
@@ -56,16 +57,16 @@ func TestLoggerError(t *testing.T) {
 	var buf bytes.Buffer
 
 	// Initialize the logger with the buffer as the output
-	logger.InitLogger(&buf, &buf, &buf)
+	logger.InitLogger(&buf, &buf, &buf, nil)
 
 	// Turn off the exit on error to test successfully
 	logger.SetExitOnError(false)
 
 	// Test Error
-	expectedError := "\033[1;31m[ERROR]\033[0m logger_test.go:66 TestErrorMessage"
+	expectedError := fmt.Sprintf("%s \033[1;31m[ERROR]\033[0m     logger_test.go:67 | TestErrorMessage", getTimestamp())
 	logger.Error(fmt.Errorf("TestErrorMessage"))
 
-	// Turn back on the exit on error 
+	// Turn back on the exit on error
 	logger.SetExitOnError(true)
 
 	// Verify Error log message
@@ -81,17 +82,12 @@ func extractLogMessage(logOutput string) string {
 	// Split log output by newline characters
 	lines := strings.Split(strings.TrimSpace(logOutput), "\n")
 
-	// Get the last line of the log output
-	lastLine := lines[len(lines)-1]
+	// The log message doesn't contain file info, return the entire last line
+	return lines[len(lines)-1]
+}
 
-	// Split the last line by space characters
-	// The third element should be the log message without the date and time
-	parts := strings.SplitN(lastLine, " ", 3)
-
-	// Get the log message without the date and time
-	lastLineWithoutTimestamp := parts[2]
-
-	return lastLineWithoutTimestamp
+func getTimestamp() string {
+	return time.Now().Format("2006/01/02 15:04:05")
 }
 
 func TestMain(m *testing.M) {

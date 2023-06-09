@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"log"
-	// "fmt"
+	"fmt"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -24,23 +24,34 @@ import (
 var client *mongo.Client
 
 func init() {
-	// Initialize the logger
-	var err error
-	err = logger.InitLogger(os.Stdout, os.Stdout, os.Stderr)
-	if err != nil {
-		// log.Fatal("Error initializing logger:", err)
-		logger.Error(err)
-		return
-	}
-
-	// Print a success message to the console
-	logger.Info("Logger initialized successfully!")
-
 	// Get the current working directory
+	var err error
 	dir, err := os.Getwd()
 	if err != nil {
 		log.Fatal("Error getting current working directory:", err)
 	}
+
+	// Create a "logs" directory
+	logsDir := filepath.Join(dir, "logs")
+	err = os.MkdirAll(logsDir, os.ModePerm)
+	if err != nil {
+		log.Fatal("Error creating logs directory:", err)
+	}
+
+	// Create a "logs.txt" file
+	logPath := filepath.Join(logsDir, "logs.txt")
+
+	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	if err != nil {
+		fmt.Println("Failed to open log file:", err)
+		return
+	}
+
+	// Initialize the logger
+	logger.InitLogger(os.Stdout, os.Stdout, os.Stderr, file)
+
+	// Print a success message to the console
+	logger.Info("Logger initialized successfully!")
 
 	// Construct the path to the .env file
 	envPath := filepath.Join(dir, ".env")
