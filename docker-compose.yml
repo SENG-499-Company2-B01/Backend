@@ -2,7 +2,7 @@ version: "3.7"
 
 services:
   mongo_db:
-    build: ./mongodb
+    build: ./mongodb 
     environment:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
@@ -23,7 +23,22 @@ services:
       - "8000:8000"
     networks:
       backend_network:
-        ipv4_address: 10.9.0.2
+        ipv4_address: 10.9.0.2 
+
+  db_init_container: 
+    build: ./mongodb/scripts  
+    depends_on:
+      - mongo_db
+    environment: 
+      MONGO_ADDRESS: ${MONGO_ADDRESS} 
+      MONGO_PORT: ${MONGO_PORT} 
+      MONGO_USERNAME: ${MONGO_USERNAME} 
+      MONGO_PASSWORD: ${MONGO_PASSWORD} 
+    ports: 
+      - "9000:9000" 
+    networks:
+      backend_network: 
+        ipv4_address: 10.9.0.4
 
 networks:
   backend_network:
