@@ -3,5 +3,3 @@
 .env
 .vscode
 logs
-.mongo_pw
-.mongo_user
