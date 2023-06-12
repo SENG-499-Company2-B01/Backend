@@ -23,6 +23,16 @@ type Class struct {
 	Room    string `json:"room"`
 }
 
+// GenerateSchedule - Generates a new schedule
+// TODO: Still needs to be implemented once algo team sets up their REST API
+func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+	fmt.Println("GenerateSchedule function called.")
+
+	// Send a response indicating successful schedule creation
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "New Scheduled generated successfully")
+}
+
 // CreateSchedule handles the creation of a new schedule
 func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	fmt.Println("CreateSchedule function called.")
