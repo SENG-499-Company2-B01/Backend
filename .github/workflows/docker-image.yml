@@ -6,7 +6,16 @@ on:
   pull_request:
     branches: [ "dev" ]
 
-jobs:
+jobs: 
+
+  create_env: 
+    runs-on: ubuntu-latest 
+    steps: 
+      - uses: actions/checkout@v3 
+      - name: Create the .env file needed for compose
+        run: | 
+          echo "${{ secrets.ENV_FILE }}" > .env
+          
 
   build:
 
