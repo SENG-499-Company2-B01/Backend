@@ -30,17 +30,36 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "New Scheduled generated successfuly")
+	fmt.Fprintf(w, "New Scheduled generated successfully")
 }
 
 // CreateSchedule handles the creation of a new schedule
 func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	fmt.Println("CreateSchedule function called.")
 
+	// Parse request body into Schedule struct
+	var newSchedule Schedule
+	err := json.NewDecoder(r.Body).Decode(&newSchedule)
+	if err != nil {
+		// If there is an error decoding the request body,
+		// return a bad request response
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	// Insert the schedule into the MongoDB collection
+	_, err = collection.InsertOne(context.TODO(), newSchedule)
+	if err != nil {
+		// If there is an error inserting the schedule into the collection,
+		// log the error and return an internal server error response
+		fmt.Println("Error inserting schedule:", err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "New schedule created successfully")
+	fmt.Fprintf(w, "Schedule created successfully")
 }
 
 // GetSchedules retrieves all schedules from the MongoDB collection
