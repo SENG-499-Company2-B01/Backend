@@ -186,6 +186,12 @@ func handleScheduleRequests(router *mux.Router) {
 	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
 		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
 	}).Methods(http.MethodDelete)
+
+	// Run Schedule Generation
+	// NOTE: Still needs to implemented after algo team sets up REST APIs
+	router.HandleFunc("/generate_schedule", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	}).Methods(http.MethodPost)
 }
 
 func main() {
