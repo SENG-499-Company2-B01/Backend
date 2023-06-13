@@ -11,14 +11,16 @@ on:
 
 jobs: 
 
-  docker: 
+  run docker: 
     runs-on: ubuntu-latest 
     steps: 
     - uses: actions/checkout@v3 
     - name: start backend 
-      run: docker-compose up --build -d
+      run: |  
+      echo "${{ secrets.ENV_FILE }}" > .env
+      docker-compose up --build -d
 
-  build:
+  run tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -34,7 +36,7 @@ jobs:
     - name: Test
       run: go test -v ./... 
       
-  stop: 
+  stop docker: 
     runs-on: ubuntu-latest 
     steps: 
     
