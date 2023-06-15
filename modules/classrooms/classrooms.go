@@ -22,12 +22,13 @@ type Classroom struct {
 }
 
 // CreateClassroom handles the creation of a new classroom
-func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
+
+func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("CreateClassroom function called.")
 
-	// Parse request body into Classroom struct
+	// Parse r body into Classroom struct
 	var newClassroom Classroom
-	err := json.NewDecoder(request.Body).Decode(&newClassroom)
+	err := json.NewDecoder(r.Body).Decode(&newClassroom)
 	if err != nil {
 		// If there is an error decoding the request body, 
 		// log the error and return a bad request response
@@ -39,6 +40,7 @@ func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	// Check if shorthand already exists in the collection
 	filter := bson.M{"shorthand": newClassroom.Shorthand}
 	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
@@ -69,7 +71,7 @@ func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	fmt.Fprintf(w, "Classroom created successfully")
 }
 
-func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
+func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetClassrooms function called.")
 
 	// Define an empty slice to store the classrooms
@@ -113,11 +115,11 @@ func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mon
 	json.NewEncoder(w).Encode(classrooms)
 }
 
-func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
+func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetClassroom function called.")
 
 	// Parse request params
-	vars := mux.Vars(request)
+	vars := mux.Vars(r)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
 		logger.Error(fmt.Errorf("shorthand is missing in parameters"))
@@ -155,11 +157,11 @@ func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mong
 	json.NewEncoder(w).Encode(classroom)
 }
 
-func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
+func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("UpdateClassroom function called.")
 
 	// Parse request params
-	vars := mux.Vars(request)
+	vars := mux.Vars(r)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
 		logger.Error(fmt.Errorf("shorthand is missing in parameters"))
@@ -199,12 +201,13 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 
 	// Parse request body into a map
 	var requestBody map[string]interface{}
-	err = json.NewDecoder(request.Body).Decode(&requestBody)
+	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
 		// If there is an error decoding the request body, 
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+
 		return
 	}
 

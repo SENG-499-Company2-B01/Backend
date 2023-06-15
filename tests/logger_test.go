@@ -1,12 +1,12 @@
-package logger_test
+package tests
 
 import (
 	"bytes"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 	"testing"
-	"fmt"
 	"time"
 
 	"github.com/SENG-499-Company2-B01/Backend/logger"
