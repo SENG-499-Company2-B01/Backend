@@ -3,8 +3,8 @@ package main
 import (
 	"context"
 
-	"log"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -90,13 +90,27 @@ func init() {
 	logger.Info("Connected to MongoDB successfully!")
 }
 
+func setupRoutes(router *mux.Router) {
+	// Handle user requests
+	handleUserRequests(router)
+
+	// Handle classroom requests
+	handleClassroomRequests(router)
+
+	// Handle course requests
+	handleCourseRequests(router)
+
+	// Handle schedule requests
+	handleScheduleRequests(router)
+}
+
 func handleUserRequests(router *mux.Router) {
 
 	// AUTHENTICATION
 	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
-	
+
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
@@ -155,7 +169,7 @@ func handleCourseRequests(router *mux.Router) {
 	router.HandleFunc("/courses", func(w http.ResponseWriter, r *http.Request) {
 		courses.GetCourses(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodGet)
-	
+
 	router.HandleFunc("/courses/{courseShortHand}", func(w http.ResponseWriter, r *http.Request) {
 		courses.DeleteCourse(w, r, client.Database("schedule_db").Collection("courses"))
 	}).Methods(http.MethodDelete)
@@ -207,6 +221,13 @@ func main() {
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
 
+}
+
+func handleRequests() {
+	router := mux.NewRouter()
+	// // Example handle request
+	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
+	setupRoutes(router)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
