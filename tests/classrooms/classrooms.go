@@ -20,7 +20,7 @@ func TestInsertClassroom(t *testing.T, executeRequest func(req *http.Request) *h
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
-	nClassroom.Room_number = 12
+	nClassroom.Room_number = "12"
 	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
@@ -46,13 +46,13 @@ func TestGetClassrooms(t *testing.T, executeRequest func(req *http.Request) *htt
 	n1Classroom.Shorthand = "Test"
 	n1Classroom.Building = "Test Building"
 	n1Classroom.Capacity = 100
-	n1Classroom.Room_number = 12
+	n1Classroom.Room_number = "12"
 	n1Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	n2Classroom.Shorthand = "Test2"
 	n2Classroom.Building = "Test Building"
 	n2Classroom.Capacity = 100
-	n2Classroom.Room_number = 12
+	n2Classroom.Room_number = "12"
 	n2Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(n1Classroom)
@@ -96,7 +96,7 @@ func TestGetClassroom(t *testing.T, executeRequest func(req *http.Request) *http
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
-	nClassroom.Room_number = 2
+	nClassroom.Room_number = "2"
 	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
@@ -130,7 +130,7 @@ func TestDeleteClassroom(t *testing.T, executeRequest func(req *http.Request) *h
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
-	nClassroom.Room_number = 4
+	nClassroom.Room_number = "4"
 	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
@@ -164,7 +164,7 @@ func TestUpdateClassroom(t *testing.T, executeRequest func(req *http.Request) *h
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
-	nClassroom.Room_number = 4
+	nClassroom.Room_number = "4"
 	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)

@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
@@ -16,7 +15,7 @@ type Classroom struct {
 	Shorthand   string   `json:"shorthand"`
 	Building    string   `json:"building"`
 	Capacity    int      `json:"capacity"`
-	Room_number int      `json:"room_number"`
+	Room_number string   `json:"room_number"`
 	Equipment   []string `json:"equipment"`
 }
 
@@ -77,8 +76,7 @@ func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	}
 
 	// Store the filter
-	room, _ := strconv.Atoi(room_number)
-	filter := bson.M{"shorthand": shorthand, "room_number": room}
+	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
 
 	// Store the retrieved classroom
 	var classroom Classroom
@@ -161,9 +159,8 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 		return
 	}
 
-	room, _ := strconv.Atoi(room_number)
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room}
+	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
 
 	// Parse r body into a map
 	var requestBody map[string]interface{}
@@ -208,9 +205,8 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 		return
 	}
 
-	room, _ := strconv.Atoi(room_number)
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room}
+	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
 
 	_, err := collection.DeleteOne(context.TODO(), filter)
 
