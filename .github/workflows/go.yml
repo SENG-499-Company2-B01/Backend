@@ -16,28 +16,11 @@ jobs:
     steps: 
     - uses: actions/checkout@v3 
     - run: echo "${{ secrets.ENV_FILE }}" > .env   
-    - run: docker-compose up --build -d
-        
-  run-tests:
-    runs-on: ubuntu-latest
-    steps:
+    - run: docker-compose up --build -d 
+    - uses: actions/setup-go@v3 
+      with: 
+        go-version: 1.19 
+    - run: go build -v ./... 
+    - run: go test -v ./...  
     - uses: actions/checkout@v3
-
-    - name: Set up Go
-      uses: actions/setup-go@v3
-      with:
-        go-version: 1.19
-
-    - name: Build
-      run: go build -v ./...
-
-    - name: Test
-      run: go test -v ./... 
-      
-  stop-docker: 
-    runs-on: ubuntu-latest 
-    steps: 
-    
-    - uses: actions/checkout@v3 
-    - name: Stop Backend Server 
-      run: docker-compose down
+    - run: docker-compose down
