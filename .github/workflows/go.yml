@@ -14,13 +14,11 @@ jobs:
   run-docker: 
     runs-on: ubuntu-latest 
     steps: 
-    - uses: actions/checkout@v3 
+    - uses: actions/setup-go@v3   
+      with: 
+        go-version: 1.19
     - run: echo "${{ secrets.ENV_FILE }}" > .env   
     - run: docker-compose up --build -d 
-    - uses: actions/setup-go@v3 
-      with: 
-        go-version: 1.19 
     - run: go build -v ./... 
-    - run: go test -v ./...  
-    - uses: actions/checkout@v3
+    - run: go test -v ./...
     - run: docker-compose down
