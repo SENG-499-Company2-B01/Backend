@@ -9,17 +9,9 @@ on:
   pull_request:
     branches: [ "dev" ]
 
-jobs: 
+jobs:
 
- start-up-docker: 
-    runs-on: ubuntu-latest 
-    steps: 
-    - uses: actions/checkout@v3 
-    - name: start backend  
-    - run: echo ${{ secrets.ENV_FILE }} > .env
-    - run: docker-compose up --build -d
-
- build-and-run-tests:
+  build:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
