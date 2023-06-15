@@ -59,15 +59,9 @@ func TestLoggerError(t *testing.T) {
 	// Initialize the logger with the buffer as the output
 	logger.InitLogger(&buf, &buf, &buf, nil)
 
-	// Turn off the exit on error to test successfully
-	logger.SetExitOnError(false)
-
 	// Test Error
-	expectedError := fmt.Sprintf("%s \033[1;31m[ERROR]\033[0m     logger_test.go:67 | TestErrorMessage", getTimestamp())
+	expectedError := fmt.Sprintf("%s \033[1;31m[ERROR]\033[0m     logger_test.go:64 | TestErrorMessage", getTimestamp())
 	logger.Error(fmt.Errorf("TestErrorMessage"))
-
-	// Turn back on the exit on error
-	logger.SetExitOnError(true)
 
 	// Verify Error log message
 	if got := extractLogMessage(buf.String()); got != expectedError {

@@ -9,6 +9,8 @@ import (
 	"github.com/gorilla/mux"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
 
 type Classroom struct {
@@ -21,17 +23,34 @@ type Classroom struct {
 
 // CreateClassroom handles the creation of a new classroom
 func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("CreateClassroom function called.")
+	logger.Info("CreateClassroom function called.")
 
 	// Parse request body into Classroom struct
 	var newClassroom Classroom
-
 	err := json.NewDecoder(request.Body).Decode(&newClassroom)
-	fmt.Print(request.Body)
 	if err != nil {
-		// If there is an error decoding the request body,
-		// return a bad request response
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// If there is an error decoding the request body, 
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+		return
+	}
+
+	// Check if shorthand already exists in the collection
+	filter := bson.M{"shorthand": newClassroom.Shorthand}
+	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error checking the collection: " + err.Error()))
+		http.Error(w, "Error checking the collection.", http.StatusInternalServerError)
+		return
+	}
+	if count > 0 {
+		// If the count is greater than 0, indicating an existing classroom,
+		// return a conflict response
+		logger.Error(fmt.Errorf("classroom already exists"))
+		http.Error(w, "Classroom already exists.", http.StatusConflict)
 		return
 	}
 
@@ -40,8 +59,8 @@ func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	if err != nil {
 		// If there is an error inserting the classroom into the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error inserting classroom:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error inserting classroom: " + err.Error()))
+		http.Error(w, "Error retrieving classrooms.", http.StatusInternalServerError)
 		return
 	}
 
@@ -50,19 +69,63 @@ func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	fmt.Fprintf(w, "Classroom created successfully")
 }
 
+func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
+	logger.Info("GetClassrooms function called.")
+
+	// Define an empty slice to store the classrooms
+	var classrooms []Classroom
+
+	// Retrieve all documents from the MongoDB collection
+	cursor, err := collection.Find(context.TODO(), bson.M{})
+	if err != nil {
+		// If there is an error retrieving classrooms,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error retrieving classrooms: " + err.Error()))
+		http.Error(w, "Error retrieving classrooms.", http.StatusInternalServerError)
+		return
+	}
+	defer cursor.Close(context.TODO())
+
+	// Iterate through the cursor and decode each document into a Classroom struct
+	for cursor.Next(context.TODO()) {
+		var classroom Classroom
+		err := cursor.Decode(&classroom)
+		if err != nil {
+			// If there is an error decoding a classroom document,
+			// log the error and return an internal server error response
+			logger.Error(fmt.Errorf("Error decoding classroom: " + err.Error()))
+			http.Error(w, "Error decoding classroom.", http.StatusInternalServerError)
+			return
+		}
+		classrooms = append(classrooms, classroom)
+	}
+
+	// Check for any errors during cursor iteration
+	if err := cursor.Err(); err != nil {
+		// If there is an error iterating through the cursor,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+		http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(classrooms)
+}
+
 func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassroom function called.")
+	logger.Info("GetClassroom function called.")
 
 	// Parse request params
 	vars := mux.Vars(request)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
-		fmt.Println("shorthand is missing in parameters")
+		logger.Error(fmt.Errorf("shorthand is missing in parameters"))
 		return
 	}
 	room_number, ok := vars["room_number"]
 	if !ok {
-		fmt.Println("room_number is missing in parameters")
+		logger.Error(fmt.Errorf("room_number is missing in parameters"))
 		return
 	}
 
@@ -78,13 +141,13 @@ func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mong
 		if err == mongo.ErrNoDocuments {
 			// If the classroom is not found,
 			// log the error and return a not found response
-			fmt.Println("Classroom not found:", err)
-			http.Error(w, "Classroom not found", http.StatusNotFound)
+			logger.Error(fmt.Errorf("Classroom not found: " + err.Error()))
+			http.Error(w, "Classroom not found.", http.StatusNotFound)
 		} else {
 			// If there is an error retrieving the classroom,
 			// log the error and return an internal server error response
-			fmt.Println("Error getting classroom:", err)
-			http.Error(w, "Error getting classroom", http.StatusInternalServerError)
+			logger.Error(fmt.Errorf("Error getting classroom: " + err.Error()))
+			http.Error(w, "Error getting classroom.", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -92,76 +155,56 @@ func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mong
 	json.NewEncoder(w).Encode(classroom)
 }
 
-func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassrooms function called.")
-
-	// Define an empty slice to store the classrooms
-	var classrooms []Classroom
-
-	// Retrieve all documents from the MongoDB collection
-	cursor, err := collection.Find(context.TODO(), bson.M{})
-	if err != nil {
-		// If there is an error retrieving classrooms,
-		// log the error and return an internal server error response
-		fmt.Println("Error retrieving classrooms:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	defer cursor.Close(context.TODO())
-
-	// Iterate through the cursor and decode each document into a Classroom struct
-	for cursor.Next(context.TODO()) {
-		var classroom Classroom
-		err := cursor.Decode(&classroom)
-		if err != nil {
-			// If there is an error decoding a classroom document,
-			// log the error and return an internal server error response
-			fmt.Println("Error decoding classroom:", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-			return
-		}
-		classrooms = append(classrooms, classroom)
-	}
-
-	// Check for any errors during cursor iteration
-	if err := cursor.Err(); err != nil {
-		// If there is an error iterating through the cursor,
-		// log the error and return an internal server error response
-		fmt.Println("Error iterating cursor:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(classrooms)
-}
-
 func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("UpdateClassrooms function called.")
+	logger.Info("UpdateClassroom function called.")
 
 	// Parse request params
 	vars := mux.Vars(request)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
-		fmt.Println("shorthand is missing in parameters")
+		logger.Error(fmt.Errorf("shorthand is missing in parameters"))
 		return
 	}
 	room_number, ok := vars["room_number"]
 	if !ok {
-		fmt.Println("room_number is missing in parameters")
+		logger.Error(fmt.Errorf("room_number is missing in parameters"))
+		return
+	}
+
+	// Check if the shorthand exists in the collection
+	filter := bson.M{
+		"$and": []bson.M{
+			{"shorthand": shorthand},
+			{"room_number": room_number},
+		},
+	}
+	exists, err := classroomExists(filter, collection)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		// If the classroom doesn't exist,
+		// return a not found response
+		logger.Error(fmt.Errorf("classroom not found"))
+		http.Error(w, "Classroom not found.", http.StatusInternalServerError)
 		return
 	}
 
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter = bson.M{"shorthand": shorthand, "room_number": room_number}
 
 	// Parse request body into a map
 	var requestBody map[string]interface{}
-	err := json.NewDecoder(request.Body).Decode(&requestBody)
+	err = json.NewDecoder(request.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body,
-		// return a bad request response
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// If there is an error decoding the request body, 
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
 
@@ -172,8 +215,8 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	if err != nil {
 		// If there is an error updating the classroom in the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error updating classroom:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error updating classroom: " + err.Error()))
+		http.Error(w, "Error updating classroom.", http.StatusInternalServerError)
 		return
 	}
 
@@ -184,34 +227,66 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 
 // DeleteClassroom handles the deletion of a classroom
 func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("DeleteClassroom function called.")
+	logger.Info("DeleteClassroom function called.")
 
 	// Parse request params
 	vars := mux.Vars(r)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
-		fmt.Println("shorthand is missing in parameters")
+		logger.Error(fmt.Errorf("shorthand is missing in parameters"))
 		return
 	}
 	room_number, ok := vars["room_number"]
 	if !ok {
-		fmt.Println("room_number is missing in parameters")
+		logger.Error(fmt.Errorf("room_number is missing in parameters"))
+		return
+	}
+
+	// Check if the shorthand exists in the collection
+	filter := bson.M{
+		"$and": []bson.M{
+			{"shorthand": shorthand},
+			{"room_number": room_number},
+		},
+	}
+	exists, err := classroomExists(filter, collection)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		// If the classroom doesn't exist,
+		// return a not found response
+		logger.Error(fmt.Errorf("classroom not found"))
+		http.Error(w, "Classroom not found.", http.StatusInternalServerError)
 		return
 	}
 
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter = bson.M{"shorthand": shorthand, "room_number": room_number}
 
-	_, err := collection.DeleteOne(context.TODO(), filter)
+	_, err = collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		// If there is an error deleting the classroom from the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error deleting classroom:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error deleting classroom: " + err.Error()))
+		http.Error(w, "Error deleting classroom.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response indicating successful classroom deletion
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Classroom deleted successfully")
+}
+
+// classroomExists checks if a document exists in the collection based on a filter
+func classroomExists(filter bson.M, collection *mongo.Collection) (bool, error) {
+	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }

@@ -17,7 +17,7 @@ var (
 	errorLogger   *log.Logger
 
 	// Flag to control program termination on error log
-	exitOnError = false//true
+	exitOnError = false // Default false
 
 	fileWriter io.Writer
 )
