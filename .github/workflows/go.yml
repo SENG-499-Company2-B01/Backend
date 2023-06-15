@@ -11,7 +11,7 @@ on:
 
 jobs: 
 
- docker: 
+ start-up-docker: 
     runs-on: ubuntu-latest 
     steps: 
     - uses: actions/checkout@v3 
@@ -19,7 +19,7 @@ jobs:
     - run: echo ${{ secrets.ENV_FILE }} > .env
     - run: docker-compose up --build -d
 
- build:
+ build-and-run-tests:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
