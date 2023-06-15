@@ -20,23 +20,33 @@ type Classroom struct {
 }
 
 // CreateClassroom handles the creation of a new classroom
-func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("CreateClassroom function called.")
+func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 
-	// Parse request body into Classroom struct
+	// Parse r body into Classroom struct
 	var newClassroom Classroom
 
-	err := json.NewDecoder(request.Body).Decode(&newClassroom)
-	fmt.Print(request.Body)
+	err := json.NewDecoder(r.Body).Decode(&newClassroom)
 	if err != nil {
-		// If there is an error decoding the request body,
-		// return a bad request response
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// If there is an error decoding the r body,
+		// return a bad r response
+		http.Error(w, "Error decoding json", http.StatusBadRequest)
+		return
+	}
+
+	filter := bson.M{"shorthand": newClassroom.Shorthand, "room_number": newClassroom.Room_number}
+	// Store the retrieved classroom
+	var existingClassroom Classroom
+	// Find the classroom
+	error := collection.FindOne(context.TODO(), filter).Decode(&existingClassroom)
+
+	if error != nil && existingClassroom.Shorthand != "" {
+		http.Error(w, "Error: Classroom already exists", http.StatusBadRequest)
 		return
 	}
 
 	// Insert the classroom into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newClassroom)
+
 	if err != nil {
 		// If there is an error inserting the classroom into the collection,
 		// log the error and return an internal server error response
@@ -50,11 +60,10 @@ func CreateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	fmt.Fprintf(w, "Classroom created successfully")
 }
 
-func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassroom function called.")
+func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 
-	// Parse request params
-	vars := mux.Vars(request)
+	// Parse r params
+	vars := mux.Vars(r)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
 		fmt.Println("shorthand is missing in parameters")
@@ -92,8 +101,7 @@ func GetClassroom(w http.ResponseWriter, request *http.Request, collection *mong
 	json.NewEncoder(w).Encode(classroom)
 }
 
-func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetClassrooms function called.")
+func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 
 	// Define an empty slice to store the classrooms
 	var classrooms []Classroom
@@ -136,11 +144,10 @@ func GetClassrooms(w http.ResponseWriter, request *http.Request, collection *mon
 	json.NewEncoder(w).Encode(classrooms)
 }
 
-func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *mongo.Collection) {
-	fmt.Println("UpdateClassrooms function called.")
+func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 
 	// Parse request params
-	vars := mux.Vars(request)
+	vars := mux.Vars(r)
 	shorthand, ok := vars["shorthand"]
 	if !ok {
 		fmt.Println("shorthand is missing in parameters")
@@ -155,12 +162,12 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 	// Store the filter
 	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
 
-	// Parse request body into a map
+	// Parse r body into a map
 	var requestBody map[string]interface{}
-	err := json.NewDecoder(request.Body).Decode(&requestBody)
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body,
-		// return a bad request response
+		// If there is an error decoding the r body,
+		// return a bad r response
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -184,7 +191,6 @@ func UpdateClassroom(w http.ResponseWriter, request *http.Request, collection *m
 
 // DeleteClassroom handles the deletion of a classroom
 func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("DeleteClassroom function called.")
 
 	// Parse request params
 	vars := mux.Vars(r)
@@ -203,6 +209,7 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
 
 	_, err := collection.DeleteOne(context.TODO(), filter)
+
 	if err != nil {
 		// If there is an error deleting the classroom from the collection,
 		// log the error and return an internal server error response
