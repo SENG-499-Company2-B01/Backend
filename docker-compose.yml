@@ -11,6 +11,8 @@ services:
       MONGO_PORT: ${MONGO_PORT}
     ports:
       - "27017:27017"
+    volumes:
+      - ./mongodb/data:/data/db
     networks:
       backend_network:
         ipv4_address: 10.9.0.3
