@@ -11,6 +11,7 @@ import (
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+	"github.com/SENG-499-Company2-B01/Backend/modules/helper"
 )
 
 // SignIn: Does Sign In process, and returns jwt token and user role
@@ -55,6 +56,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 		http.Error(w, "Error while making JWT token" + err.Error(), http.StatusNotFound)
 		return
 	}
+	helper.VerifyJWT(tokenString)
 
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
