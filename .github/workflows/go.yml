@@ -5,16 +5,19 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "dev" ]
+    branches: [ "github-actions" ]
   pull_request:
-    branches: [ "dev" ]
+    branches: [ "github-actions" ]
 
 jobs:
 
   run-all-tests:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v3 
+    - name: create .env file and start backend server 
+    - run: echo ${{ secrets.ENV_FILE }} > .env 
+    - run: docker-compose up --build -d
 
     - name: Set up Go
       uses: actions/setup-go@v3
@@ -25,4 +28,8 @@ jobs:
       run: go build -v ./...
 
     - name: Run Tests
-      run: go test -v ./...
+      run: go test -v ./... 
+      
+    - uses: actions/checkout@v3 
+    - name: Stop Sever 
+    - run: docker-compose down
