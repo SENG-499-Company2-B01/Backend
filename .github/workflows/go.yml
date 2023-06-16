@@ -25,7 +25,10 @@ jobs:
       run: go build -v ./...  
       
     - name: make .env file 
-      run: echo ${{ secrets.ENV_FILE }} > .env
+      run: echo ${{ secrets.ENV_FILE }} > .env 
+      
+    - name: start docker 
+      run: docker-compose up --build -d
 
     - name: Run Tests
       run: go test -v ./...
