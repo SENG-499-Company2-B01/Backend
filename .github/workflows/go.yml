@@ -25,7 +25,7 @@ jobs:
       run: go build -v ./...  
       
     - name: make .env file 
-      run: ehco ${{ secrets.ENV_FILE }} > .env
+      run: echo ${{ secrets.ENV_FILE }} > .env
 
     - name: Run Tests
       run: go test -v ./...
