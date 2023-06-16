@@ -1,0 +1,22 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "dev" ,"C2-29-Implement-GitHub-Actions" ]
+  pull_request:
+    branches: [ "dev" ]
+
+jobs:  
+
+  build:
+
+    runs-on: ubuntu-latest
+    steps:
+       # need checkout before using compose-action
+       - uses: actions/checkout@v3  
+       - run: 
+          echo "${{ secrets.ENV_FILE }}" > .env
+       - uses: isbang/compose-action@v1.4.1
+         with:
+          compose-file: "docker-compose.yml" 
+          up-flags: "--build"
