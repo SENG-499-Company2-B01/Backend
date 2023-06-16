@@ -27,8 +27,8 @@ jobs:
     - name: make .env file 
       run: echo ${{ secrets.ENV_FILE }} > .env 
       
-    - name: Display current directory 
-      run: pwd
+    - name: Display all files in dir
+      run: ls -a
       
     - name: start docker 
       run: docker-compose up --build -d
