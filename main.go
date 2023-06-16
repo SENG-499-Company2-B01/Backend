@@ -90,20 +90,6 @@ func init() {
 	logger.Info("Connected to MongoDB successfully!")
 }
 
-func setupRoutes(router *mux.Router) {
-	// Handle user requests
-	handleUserRequests(router)
-
-	// Handle classroom requests
-	handleClassroomRequests(router)
-
-	// Handle course requests
-	handleCourseRequests(router)
-
-	// Handle schedule requests
-	handleScheduleRequests(router)
-}
-
 func handleUserRequests(router *mux.Router) {
 
 	// AUTHENTICATION
@@ -221,13 +207,6 @@ func main() {
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
 
-}
-
-func handleRequests() {
-	router := mux.NewRouter()
-	// // Example handle request
-	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
-	setupRoutes(router)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 
