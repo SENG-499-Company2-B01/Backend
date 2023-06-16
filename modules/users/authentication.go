@@ -48,8 +48,8 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	claims := token.Claims.(jwt.MapClaims)
 	claims["expiry"] = time.Now().Add(48 * time.Hour)
 	claims["authorized"] = true
-	claims["email"] = signInReq.Email
-	claims["isAdmin"] = signInReq.IsAdmin
+	claims["email"] = user.Email
+	claims["isAdmin"] = user.IsAdmin
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {

@@ -3,6 +3,7 @@ package helper
 import (
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt"
@@ -62,4 +63,14 @@ func VerifyJWT(tokenString string) (bool, JWT_INFO, error) {
 
 	// jwtToken.
 	return false, JWT_INFO{}, nil
+}
+
+func CleanJWT(tokenString string) (string, error) {
+	const bearerPrefix = "Bearer "
+
+	if strings.HasPrefix(tokenString, bearerPrefix) {
+		return strings.TrimPrefix(tokenString, bearerPrefix), nil
+	}
+
+	return "", fmt.Errorf("invalid token format: doesn't start with 'Bearer '")
 }
