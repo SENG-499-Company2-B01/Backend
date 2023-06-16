@@ -15,6 +15,7 @@ type JWT_INFO struct {
     ExpiredAt 	time.Time 	`json:"expiry"`
 }
 
+// VerifyJWT - decrypts JWT to make sure its valid and also checks whether it is past its expiry or not
 func VerifyJWT(tokenString string) (bool, JWT_INFO, error) {
 	keyFunc := func(token *jwt.Token) (interface{}, error) {
         _, ok := token.Method.(*jwt.SigningMethodHMAC)

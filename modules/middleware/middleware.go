@@ -27,17 +27,22 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(w, "Unauthorized - Error no token provided", http.StatusUnauthorized)
+			logger.Error(fmt.Errorf("Unauthorized - Error no token provided"))
 			return
 		}
         token, err := helper.CleanJWT(r.Header.Get("Authorization"))
 		if err != nil {
 			http.Error(w, "Unauthorized - Error " + err.Error(), http.StatusUnauthorized)
+			logger.Error(fmt.Errorf("Error while cleaning jwt", err.Error()))
 			return
 		}
 
 		ok, jwtInfo, err := helper.VerifyJWT(token)
 		if err != nil || !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			if err != nil {
+				logger.Error(fmt.Errorf("Error while verifying jwt", err.Error()))
+			}
 			return
 		} 
 		fmt.Println(token)
@@ -45,6 +50,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		// user must be admin for CRUD operation on users
 		if( r.Method == "POST" ||  r.Method == "PUT" ||  r.Method == "PATCH" ||  r.Method == "DELETE") && !jwtInfo.IsAdmin {
 			http.Error(w, "Forbidden", http.StatusForbidden)
+			logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by " + jwtInfo.Email))
 			return
 		}
 
