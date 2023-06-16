@@ -221,6 +221,8 @@ func main() {
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
 
+	log.Fatal(http.ListenAndServe(":8000", router))
+
 }
 
 func handleRequests() {
