@@ -5,9 +5,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "github-actions" ]
+    branches: [ "github-actions" , "dev" ]
   pull_request:
-    branches: [ "github-actions" ]
+    branches: [ "github-actions" , "dev" ]
 
 jobs:
 
