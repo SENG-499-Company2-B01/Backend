@@ -15,14 +15,14 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username 		string 				`json:"username"`
-	Email    		string 				`json:"email"`
-	Password 		string 				`json:"password"`
-	Firstname   	string 				`json:"firstname"`
-	LastName 		string 				`json:"lastname"`
-	IsAdmin 		bool 				`json:"-"`
-	Preferences   	map[string]string   `json:"preferences"`
-	Qualifications 	[]string            `json:"qualifications"`
+	Username       string            `json:"username"`
+	Email          string            `json:"email"`
+	Password       string            `json:"password"`
+	Firstname      string            `json:"firstname"`
+	LastName       string            `json:"lastname"`
+	IsAdmin        bool              `json:"-"`
+	Preferences    map[string]string `json:"preferences"`
+	Qualifications []string          `json:"qualifications"`
 }
 
 // CreateUser handles the creation of a new user
@@ -33,7 +33,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -79,12 +79,15 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	// Send a response indicating successful user creation
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "User created successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateUser function completed.")
 }
 
 // GetUsers retrieves all users from the MongoDB collection
 func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetUsers function called.")
-	
+
 	// Define an empty slice to store the users
 	var users []User
 
@@ -125,6 +128,9 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetUsers function completed.")
 }
 
 // GetUser retrieves a user by username
@@ -158,6 +164,9 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 	// Send a response with the retrieved user
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetUser function completed.")
 }
 
 // UpdateUser handles updating an existing user
@@ -191,7 +200,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	var requestBody map[string]interface{}
 	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -222,12 +231,15 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	// Send a response indicating successful user update
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "User updated successfully.")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("UpdateUser function completed.")
 }
 
 // DeleteUser handles the deletion of a user
 func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("DeleteUser function called.")
-  
+
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")
@@ -265,6 +277,9 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	// Send a response indicating successful user deletion
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "User deleted successfully.")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("DeleteUser function completed.")
 }
 
 // userExists checks if a document exists in the collection based on a filter

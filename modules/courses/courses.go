@@ -28,7 +28,7 @@ func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	var newCourse Course
 	err := json.NewDecoder(r.Body).Decode(&newCourse)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -68,6 +68,9 @@ func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Send a response
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(newCourse)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateCourse function completed.")
 }
 
 // GetCourses - retieves all the courses from the DB
@@ -108,6 +111,9 @@ func GetCourses(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(courses)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetCourses function completed.")
 }
 
 // GetCourse - gets course with the given course shorthand
@@ -137,6 +143,9 @@ func GetCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collect
 	// Send a response
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(result)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetCourse function completed.")
 }
 
 // UpdateCourse - update the course witht the given shorthand
@@ -166,7 +175,7 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	var updateCourse map[string]interface{}
 	err = json.NewDecoder(r.Body).Decode(&updateCourse)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -192,6 +201,9 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Send a response
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Updated Successfuly")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("UpdateCourse function completed.")
 }
 
 // DeleteCourse - deletes the course witht the given shorthand
@@ -201,7 +213,7 @@ func DeleteCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	courseShortHand := strings.TrimPrefix(path, "/courses/")
-	
+
 	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(courseShortHand) {
 		logger.Error(fmt.Errorf("invalid Course shorthand"))
@@ -235,6 +247,9 @@ func DeleteCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Send a response
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode("Deleted Successfuly")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("DeleteCourse function completed.")
 }
 
 // checks for three consecutive digits

@@ -22,7 +22,6 @@ type Classroom struct {
 }
 
 // CreateClassroom handles the creation of a new classroom
-
 func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("CreateClassroom function called.")
 
@@ -30,7 +29,7 @@ func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	var newClassroom Classroom
 	err := json.NewDecoder(r.Body).Decode(&newClassroom)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -69,6 +68,9 @@ func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	// Send a response indicating successful classroom creation
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Classroom created successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateClassroom function completed.")
 }
 
 func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
@@ -113,6 +115,9 @@ func GetClassrooms(w http.ResponseWriter, r *http.Request, collection *mongo.Col
 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(classrooms)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetClassrooms function completed.")
 }
 
 func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
@@ -155,6 +160,9 @@ func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	}
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(classroom)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetClassroom function completed.")
 }
 
 func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
@@ -203,7 +211,7 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	var requestBody map[string]interface{}
 	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -226,6 +234,9 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	// Send a response indicating successful classroom update
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Classroom updated successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("UpdateClassroom function completed.")
 }
 
 // DeleteClassroom handles the deletion of a classroom
@@ -283,6 +294,9 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	// Send a response indicating successful classroom deletion
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Classroom deleted successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("DeleteClassroom function completed.")
 }
 
 // classroomExists checks if a document exists in the collection based on a filter

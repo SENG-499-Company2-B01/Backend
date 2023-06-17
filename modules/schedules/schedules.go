@@ -3,9 +3,9 @@ package schedules
 import (
 	"context"
 	"encoding/json"
-	"strings"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -15,14 +15,14 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Semester 	string 				`json:"semester"`
-	Classes     map[string]Class    `json:"classes"`
+	Semester string           `json:"semester"`
+	Classes  map[string]Class `json:"classes"`
 }
 
 type Class struct {
-	Course  	string 				`json:"course"`
-	Teacher 	string 				`json:"teacher"`
-	Room    	string 				`json:"room"`
+	Course  string `json:"course"`
+	Teacher string `json:"teacher"`
+	Room    string `json:"room"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -33,6 +33,9 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "New Scheduled generated successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GenerateSchedule function completed.")
 }
 
 // CreateSchedule handles the creation of a new schedule
@@ -43,7 +46,7 @@ func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	var newSchedule Schedule
 	err := json.NewDecoder(r.Body).Decode(&newSchedule)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -63,6 +66,9 @@ func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Schedule created successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateSchedule function completed.")
 }
 
 // GetSchedules retrieves all schedules from the MongoDB collection
@@ -109,6 +115,9 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Send a response with the retrieved schedules
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(schedules)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetSchedules function completed.")
 }
 
 // GetSchedule retrieves a schedule by username
@@ -142,6 +151,9 @@ func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Colle
 	// Send a response with the retrieved schedule
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(schedule)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetSchedule function completed.")
 }
 
 // UpdateSchedule handles updating an existing schedule
@@ -175,7 +187,7 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	var requestBody map[string]interface{}
 	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
@@ -198,6 +210,9 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	// Send a response indicating successful schedule update
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Schedule updated successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("UpdateSchedule function completed.")
 }
 
 // DeleteSchedule handles the deletion of a schedule
@@ -240,6 +255,9 @@ func DeleteSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	// Send a response indicating successful schedule deletion
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "Schedule deleted successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("DeleteSchedule function completed.")
 }
 
 // scheduleExists checks if a document exists in the collection based on a filter

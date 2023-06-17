@@ -3,8 +3,8 @@ package users
 import (
 	"context"
 	"encoding/json"
-	"net/http"
 	"fmt"
+	"net/http"
 	"os"
 	"time"
 
@@ -59,7 +59,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while making JWT token"+ err.Error()))
+		logger.Error(fmt.Errorf("Error while making JWT token" + err.Error()))
 		http.Error(w, "Error while making JWT token.", http.StatusNotFound)
 		return
 	}
@@ -67,4 +67,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"jwt": tokenString})
+
+	// Uncomment the follow line for debugging
+	// logger.Info("Signin function completed.")
 }
