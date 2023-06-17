@@ -15,14 +15,14 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username 		string `json:"username" bson:"username"`
-	Email    		string `json:"email" bson:"email"`
-	Password 		string `json:"password" bson:"password"`
-	Firstname   	string `json:"firstname" bson:"firstname"`
-	LastName 		string `json:"lastname" bson:"lastname"`
-	IsAdmin 		bool 	`json:"-" bson:"isadmin"`
-	Preferences   	map[string]string   `json:"preferences" bson:"preferences"`
-	Qualifications 	[]string            `json:"qualifications" bson:"qualifications"`
+	Username       string            `json:"username" bson:"username"`
+	Email          string            `json:"email" bson:"email"`
+	Password       string            `json:"password" bson:"password"`
+	Firstname      string            `json:"firstname" bson:"firstname"`
+	LastName       string            `json:"lastname" bson:"lastname"`
+	IsAdmin        bool              `json:"-" bson:"isadmin"`
+	Preferences    map[string]string `json:"preferences" bson:"preferences"`
+	Qualifications []string          `json:"qualifications" bson:"qualifications"`
 }
 
 // CreateUser handles the creation of a new user
@@ -33,7 +33,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		// If there is an error decoding the request body, 
+		// If there is an error decoding the request body,
 		// log the error and return a bad request response
 		logger.Error(err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -61,7 +61,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 // GetUsers retrieves all users from the MongoDB collection
 func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetUsers function called.")
-	
+
 	// Define an empty slice to store the users
 	var users []User
 
@@ -191,7 +191,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 // DeleteUser handles the deletion of a user
 func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("DeleteUser function called.")
-  
+
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")

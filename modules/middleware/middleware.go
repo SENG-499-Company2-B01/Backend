@@ -6,19 +6,19 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/SENG-499-Company2-B01/Backend/logger"
 	"github.com/SENG-499-Company2-B01/Backend/modules/helper"
+	"github.com/SENG-499-Company2-B01/Backend/modules/users"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/SENG-499-Company2-B01/Backend/modules/users"
-	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
 
 // Middleware function, which will be called for each request
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
-    return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		// ignore if this is not a call to users
-		if !strings.Contains(r.URL.Path, "/users"){
+		if !strings.Contains(r.URL.Path, "/users") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
@@ -30,10 +30,10 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			logger.Error(fmt.Errorf("Unauthorized - Error no token provided"))
 			return
 		}
-        token, err := helper.CleanJWT(r.Header.Get("Authorization"))
+		token, err := helper.CleanJWT(r.Header.Get("Authorization"))
 		if err != nil {
-			http.Error(w, "Unauthorized - Error " + err.Error(), http.StatusUnauthorized)
-			logger.Error(fmt.Errorf("Error while cleaning jwt", err.Error()))
+			http.Error(w, "Unauthorized - Error "+err.Error(), http.StatusUnauthorized)
+			logger.Error(fmt.Errorf("Error while cleaning jwt " + err.Error()))
 			return
 		}
 
@@ -41,28 +41,28 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		if err != nil || !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			if err != nil {
-				logger.Error(fmt.Errorf("Error while verifying jwt", err.Error()))
+				logger.Error(fmt.Errorf("Error while verifying jwt " + err.Error()))
 			}
 			return
-		} 
+		}
 		fmt.Println(token)
-		
+
 		// user must be admin for CRUD operation on users
-		if( r.Method == "POST" ||  r.Method == "PUT" ||  r.Method == "PATCH" ||  r.Method == "DELETE") && !jwtInfo.IsAdmin {
+		if (r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
 			http.Error(w, "Forbidden", http.StatusForbidden)
 			logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by " + jwtInfo.Email))
 			return
 		}
 
 		// if user is not admin then they can only get their
-		if( r.Method == "GET") && !jwtInfo.IsAdmin {
+		if (r.Method == "GET") && !jwtInfo.IsAdmin {
 			// Extract the user username from the URL path
 			path := r.URL.Path
 			username := strings.TrimPrefix(path, "/users/")
 			username = strings.TrimSpace(username)
 
 			// NOTE: check for get all user from non admin
-			
+
 			// Retrieve the user from the MongoDB collection
 			var user users.User
 			filter := bson.M{"username": username}
@@ -81,17 +81,17 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 				}
 				return
 			}
-			
+
 			if user.Email != jwtInfo.Email {
 				logger.Error(fmt.Errorf("Forbidden, non admin user trying to access other users info"))
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
-			
+
 		}
 
 		// Middleware successful
 		next.ServeHTTP(w, r)
-    })
-	
+	})
+
 }

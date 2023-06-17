@@ -8,10 +8,10 @@ import (
 	"os"
 	"time"
 
+	"github.com/SENG-499-Company2-B01/Backend/modules/helper"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
-	"github.com/SENG-499-Company2-B01/Backend/modules/helper"
 )
 
 // SignIn: Does Sign In process, and returns jwt token and user role
@@ -22,7 +22,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	var signInReq User
 	err := json.NewDecoder(r.Body).Decode(&signInReq)
 	if err != nil {
-		http.Error(w, "Error while decoding User Object" + err.Error(), http.StatusBadRequest)
+		http.Error(w, "Error while decoding User Object"+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -35,7 +35,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 			http.Error(w, "User/Password Incorrect", http.StatusNotFound)
 			return
 		}
-		http.Error(w, "Error while searching for user" + err.Error(), http.StatusNotFound)
+		http.Error(w, "Error while searching for user"+err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -53,7 +53,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		http.Error(w, "Error while making JWT token" + err.Error(), http.StatusNotFound)
+		http.Error(w, "Error while making JWT token"+err.Error(), http.StatusNotFound)
 		return
 	}
 	helper.VerifyJWT(tokenString)
