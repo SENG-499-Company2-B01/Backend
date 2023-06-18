@@ -9,7 +9,7 @@ on:
   pull_request:
     branches: [ "github-actions" , "dev" ] 
     
-permissions: read_all|write_all
+permissions: read_all
 
 jobs:
 
