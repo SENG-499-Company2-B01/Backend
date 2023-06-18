@@ -25,7 +25,10 @@ jobs:
       run: go build -v ./...
       
     - name: start docker 
-      run: docker-compose up --build -d
+      run: docker-compose up --build -d 
+
+    - name: set permissions 
+      run: chmod 775 /mongodb/data
 
     - name: Run Tests
       run: go test -v ./...
