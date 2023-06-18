@@ -202,7 +202,6 @@ func main() {
 	// logger.Error(fmt.Errorf("This is an error message"))
 
 	router := mux.NewRouter()
-	log.Fatal(http.ListenAndServe(":8000", router))
 
 	handleUserRequests(router)
 	handleClassroomRequests(router)
