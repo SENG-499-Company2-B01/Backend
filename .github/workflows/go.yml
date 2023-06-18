@@ -7,7 +7,9 @@ on:
   push:
     branches: [ "github-actions" , "dev" ]
   pull_request:
-    branches: [ "github-actions" , "dev" ]
+    branches: [ "github-actions" , "dev" ] 
+
+permissions: read-all
 
 jobs:
 
@@ -25,10 +27,7 @@ jobs:
       run: go build -v ./...
       
     - name: start docker 
-      run: docker-compose up --build -d 
-
-    - name: set permissions 
-      run: chmod 775 /mongodb/data
+      run: docker-compose up --build -d
 
     - name: Run Tests
       run: go test -v ./...
