@@ -12,11 +12,13 @@ import (
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
 
 // SignIn: Does Sign In process, and returns jwt token and user role
 func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("SignIn function called.")
+	logger.Info("Signin function called.")
 
 	// Define an empty slice to store the users
 	var signInReq User
@@ -32,7 +34,8 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	err = collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			http.Error(w, "User/Password Incorrect", http.StatusNotFound)
+			logger.Error(fmt.Errorf("username or password incorrect"))
+			http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 			return
 		}
 		http.Error(w, "Error while searching for user"+err.Error(), http.StatusNotFound)
@@ -40,7 +43,8 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	}
 
 	if signInReq.Email != user.Email || signInReq.Password != user.Password {
-		http.Error(w, "User/Password Incorrect", http.StatusNotFound)
+		logger.Error(fmt.Errorf("username or Password Incorrect"))
+		http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 		return
 	}
 
@@ -61,4 +65,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"jwt": tokenString})
+
+	// Uncomment the follow line for debugging
+	// logger.Info("Signin function completed.")
 }
