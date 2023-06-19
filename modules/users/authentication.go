@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/SENG-499-Company2-B01/Backend/modules/helper"
 	"github.com/golang-jwt/jwt"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,8 +24,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	var signInReq User
 	err := json.NewDecoder(r.Body).Decode(&signInReq)
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while decoding User object: " + err.Error()))
-		http.Error(w, "Error while decoding User object.", http.StatusBadRequest)
+		http.Error(w, "Error while decoding User Object"+err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -38,9 +38,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 			http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 			return
 		}
-
-		logger.Error(fmt.Errorf("Error while searching for user" + err.Error()))
-		http.Error(w, "Error while searching for user.", http.StatusNotFound)
+		http.Error(w, "Error while searching for user"+err.Error(), http.StatusNotFound)
 		return
 	}
 
@@ -54,15 +52,15 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	claims := token.Claims.(jwt.MapClaims)
 	claims["expiry"] = time.Now().Add(48 * time.Hour)
 	claims["authorized"] = true
-	claims["email"] = signInReq.Email
-	claims["isAdmin"] = signInReq.IsAdmin
+	claims["email"] = user.Email
+	claims["isAdmin"] = user.IsAdmin
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while making JWT token" + err.Error()))
-		http.Error(w, "Error while making JWT token.", http.StatusNotFound)
+		http.Error(w, "Error while making JWT token"+err.Error(), http.StatusNotFound)
 		return
 	}
+	helper.VerifyJWT(tokenString)
 
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)

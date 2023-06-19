@@ -14,6 +14,7 @@ import (
 	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
+	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -91,7 +92,10 @@ func init() {
 }
 
 func handleUserRequests(router *mux.Router) {
-
+	// router.Use(middleware.Users_API_Access_Control)
+	router.Use(func(next http.Handler) http.Handler {
+		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
+	})
 	// AUTHENTICATION
 	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
@@ -199,9 +203,8 @@ func main() {
 	// logger.Info("This is an info message")
 	// logger.Warning("This is a warning message")
 	// logger.Error(fmt.Errorf("This is an error message"))
-
+	
 	router := mux.NewRouter()
-
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)

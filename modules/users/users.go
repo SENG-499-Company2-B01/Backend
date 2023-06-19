@@ -15,14 +15,14 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username       string            `json:"username"`
-	Email          string            `json:"email"`
-	Password       string            `json:"password"`
-	Firstname      string            `json:"firstname"`
-	LastName       string            `json:"lastname"`
-	IsAdmin        bool              `json:"-"`
-	Preferences    map[string]string `json:"preferences"`
-	Qualifications []string          `json:"qualifications"`
+	Username       string            `json:"username" bson:"username"`
+	Email          string            `json:"email" bson:"email"`
+	Password       string            `json:"password" bson:"password"`
+	Firstname      string            `json:"firstname" bson:"firstname"`
+	LastName       string            `json:"lastname" bson:"lastname"`
+	IsAdmin        bool              `json:"-" bson:"isAdmin"`
+	Preferences    map[string]string `json:"preferences" bson:"preferences"`
+	Qualifications []string          `json:"qualifications" bson:"qualifications"`
 }
 
 // CreateUser handles the creation of a new user
