@@ -1,0 +1,36 @@
+# This workflow will build a golang project
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-go
+
+name: Build and Test
+
+on:
+  push:
+    branches: [ "github-actions" , "dev" ]
+  pull_request:
+    branches: [ "github-actions" , "dev" ] 
+
+permissions: read-all
+
+jobs:
+
+  run-all-tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Go
+      uses: actions/setup-go@v3
+      with:
+        go-version: 1.19
+
+    - name: Build Tests
+      run: go build -v ./...
+      
+    - name: start docker 
+      run: docker-compose up --build -d  
+      
+    - name: set permissions 
+      run: sudo chmod 777 mongodb/data/journal
+
+    - name: Run Tests
+      run: go test -v ./...
