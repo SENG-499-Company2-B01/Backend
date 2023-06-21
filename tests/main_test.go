@@ -1,26 +1,27 @@
-package main
+package tests
 
 import (
 	"context"
-
-	"fmt"
-	"log"
 	"net/http"
+	"net/http/httptest"
+
+	// "encoding/json"
+	// "fmt"
+	"log"
 	"os"
 	"path/filepath"
 
-	"github.com/SENG-499-Company2-B01/Backend/logger"
 	"github.com/SENG-499-Company2-B01/Backend/modules/classrooms"
 	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
-	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
-
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
+
+var router = mux.NewRouter()
 
 var client *mongo.Client
 
@@ -31,31 +32,10 @@ func init() {
 	if err != nil {
 		log.Fatal("Error getting current working directory:", err)
 	}
-
-	// Create a "logs" directory
-	logsDir := filepath.Join(dir, "logs")
-	err = os.MkdirAll(logsDir, os.ModePerm)
-	if err != nil {
-		log.Fatal("Error creating logs directory:", err)
-	}
-
-	// Create a "logs.txt" file
-	logPath := filepath.Join(logsDir, "logs.txt")
-
-	file, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
-	if err != nil {
-		fmt.Println("Failed to open log file:", err)
-		return
-	}
-
-	// Initialize the logger
-	logger.InitLogger(os.Stdout, os.Stdout, os.Stderr, file)
-
-	// Print a success message to the console
-	logger.Info("Logger initialized successfully!")
+	log.Println("Current working directory:", dir)
 
 	// Construct the path to the .env file
-	envPath := filepath.Join(dir, ".env")
+	envPath := filepath.Join(dir+"/../", ".env")
 
 	// Load the .env file
 	err = godotenv.Load(envPath)
@@ -88,14 +68,31 @@ func init() {
 		log.Fatal(err)
 	}
 
-	logger.Info("Connected to MongoDB successfully!")
+	log.Println("Connected to MongoDB!")
+}
+
+func executeRequest(req *http.Request) *httptest.ResponseRecorder {
+	rr := httptest.NewRecorder()
+	router.ServeHTTP(rr, req)
+	return rr
+}
+
+func setupRoutes(router *mux.Router) {
+	// Handle user requests
+	handleUserRequests(router)
+
+	// Handle classroom requests
+	handleClassroomRequests(router)
+
+	// Handle course requests
+	handleCourseRequests(router)
+
+	// Handle schedule requests
+	handleScheduleRequests(router)
 }
 
 func handleUserRequests(router *mux.Router) {
-	// router.Use(middleware.Users_API_Access_Control)
-	router.Use(func(next http.Handler) http.Handler {
-		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
-	})
+
 	// AUTHENTICATION
 	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
@@ -203,13 +200,21 @@ func main() {
 	// logger.Info("This is an info message")
 	// logger.Warning("This is a warning message")
 	// logger.Error(fmt.Errorf("This is an error message"))
-	
+
 	router := mux.NewRouter()
+
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
 
+}
+
+func handleRequests() {
+	router := mux.NewRouter()
+	// // Example handle request
+	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
+	setupRoutes(router)
 	log.Fatal(http.ListenAndServe(":8000", router))
 }
 

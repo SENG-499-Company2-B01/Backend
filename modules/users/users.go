@@ -3,57 +3,90 @@ package users
 import (
 	"context"
 	"encoding/json"
-	"strings"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
+
+	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
 
 // User represents a user entity
 type User struct {
-	Username 		string `json:"username"`
-	Email    		string `json:"email"`
-	Password 		string `json:"password"`
-	Firstname   	string `json:"firstname"`
-	LastName 		string `json:"lastname"`
-	Preferences   	map[string]string   `json:"preferences"`
-	Qualifications 	[]string            `json:"qualifications"`
+	Username       string            `json:"username" bson:"username"`
+	Email          string            `json:"email" bson:"email"`
+	Password       string            `json:"password" bson:"password"`
+	Firstname      string            `json:"firstname" bson:"firstname"`
+	LastName       string            `json:"lastname" bson:"lastname"`
+	IsAdmin        bool              `json:"-" bson:"isAdmin"`
+	Preferences    map[string]string `json:"preferences" bson:"preferences"`
+	Qualifications []string          `json:"qualifications" bson:"qualifications"`
 }
 
 // CreateUser handles the creation of a new user
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("CreateUser function called.")
-	
+	logger.Info("CreateUser function called.")
+
 	// Parse request body into User struct
 	var newUser User
 	err := json.NewDecoder(r.Body).Decode(&newUser)
 	if err != nil {
-		// If there is an error decoding the request body, 
-		// return a bad request response
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// If there is an error decoding the request body,
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
+
+	// Check if username or email already exists in the collection
+	filter := bson.M{
+		"$or": []bson.M{
+			{"username": newUser.Username},
+			{"email": newUser.Email},
+		},
+	}
+	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error checking the collection: " + err.Error()))
+		http.Error(w, "Error checking the collection.", http.StatusInternalServerError)
+		return
+	}
+	if count > 0 {
+		// If the count is greater than 0, indicating an existing user,
+		// return a conflict response
+		logger.Error(fmt.Errorf("username or email already exists"))
+		http.Error(w, "Username or email already exists.", http.StatusConflict)
+		return
+	}
+
+	// by default IsAdmin is supposed to be set to false
+	newUser.IsAdmin = false
 
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newUser)
 	if err != nil {
-		// If there is an error inserting the user into the collection, 
+		// If there is an error inserting the user into the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error inserting user:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error inserting user: " + err.Error()))
+		http.Error(w, "Error inserting user.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response indicating successful user creation
 	w.WriteHeader(http.StatusOK)
 	fmt.Fprintf(w, "User created successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateUser function completed.")
 }
 
 // GetUsers retrieves all users from the MongoDB collection
 func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetUsers function called.")
+	logger.Info("GetUsers function called.")
 
 	// Define an empty slice to store the users
 	var users []User
@@ -61,10 +94,10 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 	// Retrieve all documents from the MongoDB collection
 	cursor, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
-		// If there is an error retrieving users, 
+		// If there is an error retrieving users,
 		// log the error and return an internal server error response
-		fmt.Println("Error retrieving users:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error retrieving users: " + err.Error()))
+		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
 		return
 	}
 	defer cursor.Close(context.TODO())
@@ -74,10 +107,10 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 		var user User
 		err := cursor.Decode(&user)
 		if err != nil {
-			// If there is an error decoding a user document, 
+			// If there is an error decoding a user document,
 			// log the error and return an internal server error response
-			fmt.Println("Error decoding user:", err)
-			http.Error(w, err.Error(), http.StatusInternalServerError)
+			logger.Error(fmt.Errorf("Error decoding user document: " + err.Error()))
+			http.Error(w, "Error decoding user document.", http.StatusInternalServerError)
 			return
 		}
 		users = append(users, user)
@@ -85,21 +118,24 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 
 	// Check for any errors during cursor iteration
 	if err := cursor.Err(); err != nil {
-		// If there is an error iterating through the cursor, 
+		// If there is an error iterating through the cursor,
 		// log the error and return an internal server error response
-		fmt.Println("Error iterating cursor:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+		http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(users)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetUsers function completed.")
 }
 
 // GetUser retrieves a user by username
 func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("GetUser function called.")
+	logger.Info("GetUser function called.")
 
 	// Extract the user username from the URL path
 	path := r.URL.Path
@@ -112,15 +148,15 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 	err := collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			// If the user is not found, 
+			// If the user is not found,
 			// log the error and return a not found response
-			fmt.Println("User not found:", err)
-			http.Error(w, "User not found", http.StatusNotFound)
+			logger.Error(fmt.Errorf("user not found"))
+			http.Error(w, "User not found.", http.StatusNotFound)
 		} else {
-			// If there is an error retrieving the user, 
+			// If there is an error retrieving the user,
 			// log the error and return an internal server error response
-			fmt.Println("Error getting user:", err)
-			http.Error(w, "Error getting user", http.StatusInternalServerError)
+			logger.Error(fmt.Errorf("error getting user"))
+			http.Error(w, "Error getting user.", http.StatusInternalServerError)
 		}
 		return
 	}
@@ -128,24 +164,53 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 	// Send a response with the retrieved user
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(user)
+
+	// Uncomment the follow line for debugging
+	// logger.Info("GetUser function completed.")
 }
 
 // UpdateUser handles updating an existing user
 func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("UpdateUser function called.")
-	
+	logger.Info("UpdateUser function called.")
+
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")
 	username = strings.TrimSpace(username)
 
+	// Check if the user exists in the collection
+	filter := bson.M{"username": username}
+	exists, err := userExists(filter, collection)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		// If the semester doesn't exist,
+		// return a not found response
+		logger.Error(fmt.Errorf("user not found"))
+		http.Error(w, "User not found.", http.StatusInternalServerError)
+		return
+	}
+
 	// Parse request body into a map
 	var requestBody map[string]interface{}
-	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	err = json.NewDecoder(r.Body).Decode(&requestBody)
 	if err != nil {
-		// If there is an error decoding the request body, 
-		// return a bad request response
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		// If there is an error decoding the request body,
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+		return
+	}
+
+	// isAdmin cannot be updated
+	if requestBody["isAdmin"] != nil {
+		logger.Error(fmt.Errorf("isAdmin field cannot be updated"))
+		http.Error(w, "isAdmin field cannot be updated.", http.StatusInternalServerError)
 		return
 	}
 
@@ -153,42 +218,75 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	update := bson.M{"$set": requestBody}
 
 	// Update the user in the MongoDB collection
-	filter := bson.M{"username": username}
+	filter = bson.M{"username": username}
 	_, err = collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		// If there is an error updating the user in the collection, 
+		// If there is an error updating the user in the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error updating user:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error updating the user: " + err.Error()))
+		http.Error(w, "Error updating the user.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response indicating successful user update
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User updated successfully")
+	fmt.Fprintf(w, "User updated successfully.")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("UpdateUser function completed.")
 }
 
 // DeleteUser handles the deletion of a user
 func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	fmt.Println("DeleteUser function called.")
-	
+	logger.Info("DeleteUser function called.")
+
 	// Extract the user username from the URL path
 	path := r.URL.Path
 	username := strings.TrimPrefix(path, "/users/")
 	username = strings.TrimSpace(username)
 
-	// Delete the user from the MongoDB collection
+	// Check if the user exists in the collection
 	filter := bson.M{"username": username}
-	_, err := collection.DeleteOne(context.TODO(), filter)
+	exists, err := userExists(filter, collection)
 	if err != nil {
-		// If there is an error deleting the user from the collection, 
+		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		fmt.Println("Error deleting user:", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
+		return
+	}
+	if !exists {
+		// If the user doesn't exist,
+		// return a not found response
+		logger.Error(fmt.Errorf("user not found"))
+		http.Error(w, "User not found.", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete the user from the MongoDB collection
+	filter = bson.M{"username": username}
+	_, err = collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		// If there is an error deleting the user from the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error deleting the user: " + err.Error()))
+		http.Error(w, "Error deleting the user.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response indicating successful user deletion
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User deleted successfully")
+	fmt.Fprintf(w, "User deleted successfully.")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("DeleteUser function completed.")
+}
+
+// userExists checks if a document exists in the collection based on a filter
+func userExists(filter bson.M, collection *mongo.Collection) (bool, error) {
+	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+	if err != nil {
+		return false, err
+	}
+	return count > 0, nil
 }
