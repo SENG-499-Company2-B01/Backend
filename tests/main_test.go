@@ -69,6 +69,7 @@ func init() {
 	}
 
 	log.Println("Connected to MongoDB!")
+	main()
 }
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
@@ -202,11 +203,12 @@ func main() {
 	// logger.Error(fmt.Errorf("This is an error message"))
 
 	router := mux.NewRouter()
-
+	log.Println("Entering the main function in classrooms test...")
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
+	//log.Fatal(http.ListenAndServe(":9000", router))
 
 }
 
@@ -215,7 +217,7 @@ func handleRequests() {
 	// // Example handle request
 	// router.HandleFunc("/", homePage).Methods(http.MethodGet)
 	setupRoutes(router)
-	log.Fatal(http.ListenAndServe(":8000", router))
+	//log.Fatal(http.ListenAndServe(":8000", router))
 }
 
 // // Example handle request
