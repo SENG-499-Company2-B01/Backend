@@ -14,6 +14,7 @@ import (
 func TestInsertClassroom(t *testing.T) {
 	// Create a classroom
 	var nClassroom = classrooms.Classroom{}
+	setupRoutes(router)
 
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
@@ -24,12 +25,13 @@ func TestInsertClassroom(t *testing.T) {
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
 
-	res, _ := http.Post("http://10.9.0.2:8000/classrooms", "application/json", bytes.NewBuffer(payload))
+	req, _ := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
+	response := executeRequest(req)
 
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, res.StatusCode)
+	if response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
-	print(res.StatusCode)
+	print(response.Code)
 	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter)
@@ -37,13 +39,55 @@ func TestInsertClassroom(t *testing.T) {
 }
 
 func TestGetClassrooms(t *testing.T) {
+	// Create a classroom
+	var n1Classroom = classrooms.Classroom{}
+	var n2Classroom = classrooms.Classroom{}
+	setupRoutes(router)
 
-	//Simple GET test
-	res, _ := http.Get("http://10.9.0.2:8000/classrooms")
+	n1Classroom.Shorthand = "Test"
+	n1Classroom.Building = "Test Building"
+	n1Classroom.Capacity = 100
+	n1Classroom.Room_number = "12"
+	n1Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, res.StatusCode)
+	n2Classroom.Shorthand = "Test2"
+	n2Classroom.Building = "Test Building"
+	n2Classroom.Capacity = 100
+	n2Classroom.Room_number = "12"
+	n2Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
+
+	requestBody, _ := json.Marshal(n1Classroom)
+	payload := []byte(requestBody)
+	req, _ := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
+	response := executeRequest(req)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
+
+	requestBody, _ = json.Marshal(n2Classroom)
+	payload = []byte(requestBody)
+	req, _ = http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
+	response = executeRequest(req)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
+	}
+
+	req, _ = http.NewRequest("GET", "/classrooms", nil)
+	response = executeRequest(req)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
+	}
+
+	filter1 := bson.M{"shorthand": n1Classroom.Shorthand, "room_number": n1Classroom.Room_number}
+	filter2 := bson.M{"shorthand": n2Classroom.Shorthand, "room_number": n2Classroom.Room_number}
+
+	t.Cleanup(func() {
+		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter1)
+		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter2)
+	})
 }
 
 func TestGetClassroom(t *testing.T) {
@@ -60,15 +104,18 @@ func TestGetClassroom(t *testing.T) {
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
 
-	res, _ := http.Post("http://10.9.0.2:8000/classrooms", "application/json", bytes.NewBuffer(payload))
+	ins, _ := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
+	insert_response := executeRequest(ins)
 
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, res.StatusCode)
+	if insert_response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, insert_response.Code)
 	}
 
-	res, _ = http.Get("http://10.9.0.2:8000/classrooms/Test/2")
-	if res.StatusCode != http.StatusOK {
-		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, res.StatusCode)
+	get, _ := http.NewRequest("GET", "/classrooms/Test/2", nil)
+	get_response := executeRequest(get)
+
+	if get_response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, get_response.Code)
 	}
 
 	filter1 := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
@@ -82,27 +129,25 @@ func TestDeleteClassroom(t *testing.T) {
 	// Create a classroom
 	var nClassroom = classrooms.Classroom{}
 
-	//setupRoutes(router)
+	setupRoutes(router)
 	nClassroom.Shorthand = "Test"
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
-	nClassroom.Room_number = "5"
+	nClassroom.Room_number = "4"
 	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
-	// requestBody, _ := json.Marshal(nClassroom)
-	// payload := []byte(requestBody)
+	requestBody, _ := json.Marshal(nClassroom)
+	payload := []byte(requestBody)
 
-	// res, _ := http.Post("http://10.9.0.2:8000/classrooms", "application/json", bytes.NewBuffer(payload))
-
-	// if res.StatusCode != http.StatusOK {
-	// 	t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, res.StatusCode)
-	// }
-
-	req, err := http.NewRequest(http.MethodDelete, "http:/10.9.0.2:8000/classrooms/TEST/4", nil)
-	if err != nil {
-		panic(err)
-	}
+	req, _ := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
 	response := executeRequest(req)
+
+	if response.Code != http.StatusOK {
+		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
+	}
+
+	req, _ = http.NewRequest("DELETE", "/classrooms/TEST/4", bytes.NewBuffer(payload))
+	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
@@ -129,10 +174,7 @@ func TestUpdateClassroom(t *testing.T) {
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
 
-	req, err := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
-	if err != nil {
-		panic(err)
-	}
+	req, _ := http.NewRequest("POST", "/classrooms", bytes.NewBuffer(payload))
 	response := executeRequest(req)
 
 	if response.Code != http.StatusOK {
