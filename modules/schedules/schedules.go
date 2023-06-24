@@ -48,7 +48,7 @@ func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
@@ -58,7 +58,7 @@ func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error inserting the schedule into the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error inserting schedule: " + err.Error()))
+		logger.Error(fmt.Errorf("Error inserting schedule: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error inserting schedule.", http.StatusInternalServerError)
 		return
 	}
@@ -83,7 +83,7 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	if err != nil {
 		// If there is an error retrieving schedules,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error retrieving schedules: " + err.Error()))
+		logger.Error(fmt.Errorf("Error retrieving schedules: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving schedules.", http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +96,7 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 		if err != nil {
 			// If there is an error decoding a schedule document,
 			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("Error decoding schedule: " + err.Error()))
+			logger.Error(fmt.Errorf("Error decoding schedule: "+err.Error()), http.StatusInternalServerError)
 			http.Error(w, "Error decoding schedule.", http.StatusInternalServerError)
 			return
 		}
@@ -107,7 +107,7 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	if err := cursor.Err(); err != nil {
 		// If there is an error iterating through the cursor,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+		logger.Error(fmt.Errorf("Error iterating cursor: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
 		return
 	}
@@ -137,12 +137,12 @@ func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Colle
 		if err == mongo.ErrNoDocuments {
 			// If the schedule is not found,
 			// log the error and return a not found response
-			logger.Error(fmt.Errorf("Schedule not found: " + err.Error()))
+			logger.Error(fmt.Errorf("Schedule not found: "+err.Error()), http.StatusNotFound)
 			http.Error(w, "Schedule not found.", http.StatusNotFound)
 		} else {
 			// If there is an error retrieving the schedule,
 			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("Error getting schedule: " + err.Error()))
+			logger.Error(fmt.Errorf("Error getting schedule: "+err.Error()), http.StatusInternalServerError)
 			http.Error(w, "Error getting schedule.", http.StatusInternalServerError)
 		}
 		return
@@ -171,14 +171,14 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
 		return
 	}
 	if !exists {
 		// If the semester doesn't exist,
 		// return a not found response
-		logger.Error(fmt.Errorf("semester not found"))
+		logger.Error(fmt.Errorf("semester not found"), http.StatusInternalServerError)
 		http.Error(w, "Semester not found.", http.StatusInternalServerError)
 		return
 	}
@@ -189,7 +189,7 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
@@ -202,7 +202,7 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error updating the schedule in the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error updating schedule: " + err.Error()))
+		logger.Error(fmt.Errorf("Error updating schedule: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error updating schedule.", http.StatusInternalServerError)
 		return
 	}
@@ -230,14 +230,14 @@ func DeleteSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
 		return
 	}
 	if !exists {
 		// If the semester doesn't exist,
 		// return a not found response
-		logger.Error(fmt.Errorf("semester not found"))
+		logger.Error(fmt.Errorf("semester not found"), http.StatusInternalServerError)
 		http.Error(w, "Semester not found.", http.StatusInternalServerError)
 		return
 	}
@@ -247,7 +247,7 @@ func DeleteSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 	if err != nil {
 		// If there is an error deleting the schedule from the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error deleting schedule: " + err.Error()))
+		logger.Error(fmt.Errorf("Error deleting schedule: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error deleting schedule.", http.StatusInternalServerError)
 		return
 	}
