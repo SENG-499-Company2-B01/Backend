@@ -1,13 +1,14 @@
 package logger
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"os"
 	"log"
+	"os"
 	"path/filepath"
 	"runtime"
-	"errors"
 	"time"
 )
 
@@ -21,6 +22,11 @@ var (
 
 	fileWriter io.Writer
 )
+
+type errorMessage struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
 
 // Initializes the loggers with their respective outputs and formats.
 func InitLogger(infoOutput, warningOutput, errorOutput, fileOutput io.Writer) error {
@@ -70,17 +76,27 @@ func Warning(message string) {
 	}
 }
 
+func getErrorMessage(err error, code int) string {
+	var errorMessage errorMessage
+
+	errorMessage.Code = code
+	errorMessage.Message = err.Error()
+
+	result, _ := json.Marshal(errorMessage)
+	return string(result)
+}
+
 // Error logs an error message to the console with the file and line number.
 // If exitOnError flag is set, the program will exit after logging the error.
-func Error(err error) {
+func Error(err error, code int) {
 	fileLine := getFileLine()
 
 	// Print the error to the console with the file and line number, and colour the tag red
-	errorLogger.Printf("\033[1;31m[ERROR]\033[0m     %s | %s", fileLine, err)
+	errorLogger.Printf("\033[1;31m[ERROR]\033[0m     %s | %s\n", fileLine, getErrorMessage(err, code))
 
 	// Write the error to the file
 	if fileWriter != nil {
-		fileWriter.Write([]byte(fmt.Sprintf("%s [ERROR]     %s | %s\n", getTimestamp(), fileLine, err)))
+		fileWriter.Write([]byte(fmt.Sprintf("%s [ERROR]     %s | %s\n", getTimestamp(), fileLine, getErrorMessage(err, code))))
 	}
 
 	if exitOnError {

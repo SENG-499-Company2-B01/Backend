@@ -30,14 +30,14 @@ func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
 
 	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(newCourse.ShortHand) {
-		logger.Error(fmt.Errorf("invalid Course shorthand"))
+		logger.Error(fmt.Errorf("invalid Course shorthand"), http.StatusBadRequest)
 		http.Error(w, "Invalid Course shorthand.", http.StatusBadRequest)
 		return
 	}
@@ -47,12 +47,12 @@ func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	filter := bson.D{{"shorthand", newCourse.ShortHand}}
 	err = collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err == nil && result.ShortHand != "" {
-		logger.Error(fmt.Errorf("Course %s already exists", result.ShortHand))
+		logger.Error(fmt.Errorf("Course %s already exists", result.ShortHand), http.StatusInternalServerError)
 		http.Error(w, fmt.Sprintf("Error: %s course already exists.", result.ShortHand), http.StatusInternalServerError)
 		return
 	}
 	if err != nil && err != mongo.ErrNoDocuments {
-		logger.Error(fmt.Errorf("Error while checking for duplicate document: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while checking for duplicate document: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while checking for duplicate document.", http.StatusInternalServerError)
 		return
 	}
@@ -60,7 +60,7 @@ func CreateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Insert the user into the MongoDB collection
 	_, err = collection.InsertOne(context.TODO(), newCourse)
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while inserting course into DB: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while inserting course into DB: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while inserting course into DB.", http.StatusInternalServerError)
 		return
 	}
@@ -83,7 +83,7 @@ func GetCourses(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	// Retrieve all documents from the MongoDB collection
 	cursor, err := collection.Find(context.TODO(), bson.M{})
 	if err != nil {
-		logger.Error(fmt.Errorf("Error retrieving users: " + err.Error()))
+		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
 		return
 	}
@@ -94,7 +94,7 @@ func GetCourses(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		var course Course
 		err := cursor.Decode(&course)
 		if err != nil {
-			logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+			logger.Error(fmt.Errorf("Error iterating cursor: "+err.Error()), http.StatusInternalServerError)
 			http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
 			return
 		}
@@ -103,7 +103,7 @@ func GetCourses(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 
 	// Check for any errors during cursor iteration
 	if err := cursor.Err(); err != nil {
-		logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+		logger.Error(fmt.Errorf("Error iterating cursor: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
 		return
 	}
@@ -125,7 +125,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collect
 	courseShortHand := strings.TrimPrefix(path, "/courses/")
 	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(courseShortHand) {
-		logger.Error(fmt.Errorf("invalid Course shorthand"))
+		logger.Error(fmt.Errorf("invalid Course shorthand"), http.StatusBadRequest)
 		http.Error(w, "Invalid Course shorthand.", http.StatusBadRequest)
 		return
 	}
@@ -135,7 +135,7 @@ func GetCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collect
 	filter := bson.D{{"shorthand", courseShortHand}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while finding the course: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while finding the course: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while finding the course.", http.StatusInternalServerError)
 		return
 	}
@@ -161,12 +161,12 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	filter := bson.D{{"shorthand", courseShortHand}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
-		logger.Error(fmt.Errorf("Course %s doesn't exist", courseShortHand))
+		logger.Error(fmt.Errorf("Course %s doesn't exist", courseShortHand), http.StatusInternalServerError)
 		http.Error(w, fmt.Sprintf("Error: %s course doesn't exist.", courseShortHand), http.StatusInternalServerError)
 		return
 	}
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while finding the course: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while finding the course: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while finding the course.", http.StatusInternalServerError)
 		return
 	}
@@ -177,14 +177,14 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
 
 	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(courseShortHand) {
-		logger.Error(fmt.Errorf("invalid Course shorthand"))
+		logger.Error(fmt.Errorf("invalid Course shorthand"), http.StatusBadRequest)
 		http.Error(w, "Invalid Course shorthand.", http.StatusBadRequest)
 		return
 	}
@@ -193,7 +193,7 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	filter = bson.D{{"shorthand", courseShortHand}}
 	_, err = collection.UpdateOne(context.TODO(), filter, update)
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while updating the course: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while updating the course: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while updating the course.", http.StatusInternalServerError)
 		return
 	}
@@ -216,7 +216,7 @@ func DeleteCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 
 	// CHECK if shorthand is ABC101 format
 	if !hasThreeConsecutiveNumerics(courseShortHand) {
-		logger.Error(fmt.Errorf("invalid Course shorthand"))
+		logger.Error(fmt.Errorf("invalid Course shorthand"), http.StatusBadRequest)
 		http.Error(w, "Invalid Course shorthand.", http.StatusBadRequest)
 		return
 	}
@@ -226,12 +226,12 @@ func DeleteCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	filter := bson.D{{"shorthand", courseShortHand}}
 	err := collection.FindOne(context.TODO(), filter).Decode(&result)
 	if err == mongo.ErrNoDocuments {
-		logger.Error(fmt.Errorf("Course %s doesn't exist", result.ShortHand))
+		logger.Error(fmt.Errorf("Course %s doesn't exist", result.ShortHand), http.StatusInternalServerError)
 		http.Error(w, fmt.Sprintf("Error: %s course doesn't exist", result.ShortHand), http.StatusInternalServerError)
 		return
 	}
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while finding the course: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while finding the course: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while finding the course.", http.StatusInternalServerError)
 		return
 	}
@@ -239,7 +239,7 @@ func DeleteCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 	// Delete the course
 	_, err = collection.DeleteOne(context.TODO(), filter)
 	if err != nil {
-		logger.Error(fmt.Errorf("Error while Deleting the course: " + err.Error()))
+		logger.Error(fmt.Errorf("Error while Deleting the course: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error while Deleting the course.", http.StatusInternalServerError)
 		return
 	}

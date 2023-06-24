@@ -34,7 +34,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	err = collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			logger.Error(fmt.Errorf("username or password incorrect"))
+			logger.Error(fmt.Errorf("username or password incorrect"), http.StatusNotFound)
 			http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 			return
 		}
@@ -43,7 +43,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	}
 
 	if signInReq.Email != user.Email || signInReq.Password != user.Password {
-		logger.Error(fmt.Errorf("username or Password Incorrect"))
+		logger.Error(fmt.Errorf("username or Password Incorrect"), http.StatusNotFound)
 		http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 		return
 	}
