@@ -24,6 +24,19 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			return
 		}
 
+		apikey := r.Header.Get("apikey")
+		if apikey != "" {
+			check := helper.VerifyAPIKey(apikey)
+			if check {
+				// Middleware successful
+				next.ServeHTTP(w, r)
+				return
+			}
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			logger.Error(fmt.Errorf("Unauthorized"), http.StatusUnauthorized)
+			return
+		}
+
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(w, "Unauthorized - Error no token provided", http.StatusUnauthorized)
