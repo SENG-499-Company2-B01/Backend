@@ -13,10 +13,13 @@ def check_if_not_empty(coll,coll_name):
     print("INFO: No data found in %s collection ... inserting data" %(coll_name))
     return False
 
-def load_users(coll,admin_1,admin_2): 
+def load_users(coll): 
 
     if check_if_not_empty(coll,'users'): 
-        return 
+        return   
+    
+    admin_1 = os.getenv("ADMIN_1") 
+    admin_2 = os.getenv("ADMIN_2")
 
 
     users_df = pd.read_csv("users.csv").fillna('')
@@ -31,7 +34,8 @@ def load_users(coll,admin_1,admin_2):
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
 
-        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
+        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2: 
+            print("ADMIN FOUND!")
             user['isAdmin'] = True
         else: 
             user['isAdmin'] = False
@@ -98,9 +102,7 @@ def db_seed():
     mongo_user = os.getenv("MONGO_USERNAME")
     mongo_pw = os.getenv("MONGO_PASSWORD")
     mongo_ip = os.getenv("MONGO_ADDRESS")
-    mongo_port = os.getenv("MONGO_PORT")  
-    admin_1 = os.getenv("ADMIN_1") 
-    admin_2 = os.getenv("ADMIN_2")
+    mongo_port = os.getenv("MONGO_PORT")   
 
     conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_ip+':'+mongo_port+'/')
     db = conn['schedule_db']
@@ -110,7 +112,7 @@ def db_seed():
     classrooms_collection = db['classrooms']
 
 
-    load_users(user_collection,admin_1,admin_2) 
+    load_users(user_collection)
     load_courses(courses_collection) 
     load_classrooms(classrooms_collection)
 
