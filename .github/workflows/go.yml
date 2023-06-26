@@ -5,9 +5,9 @@ name: Build and Test
 
 on:
   push:
-    branches: [ "github-actions" , "dev" ]
+    branches: ["dev" , "main" ]
   pull_request:
-    branches: [ "github-actions" , "dev" ] 
+    branches: [ "dev" , "main" ] 
 
 permissions: read-all
 
