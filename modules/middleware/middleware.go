@@ -24,16 +24,29 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			return
 		}
 
+		apikey := r.Header.Get("apikey")
+		if apikey != "" {
+			check := helper.VerifyAPIKey(apikey)
+			if check {
+				// Middleware successful
+				next.ServeHTTP(w, r)
+				return
+			}
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			logger.Error(fmt.Errorf("Unauthorized"), http.StatusUnauthorized)
+			return
+		}
+
 		auth := r.Header.Get("Authorization")
 		if auth == "" {
 			http.Error(w, "Unauthorized - Error no token provided", http.StatusUnauthorized)
-			logger.Error(fmt.Errorf("Unauthorized - Error no token provided"))
+			logger.Error(fmt.Errorf("Unauthorized - Error no token provided"), http.StatusUnauthorized)
 			return
 		}
 		token, err := helper.CleanJWT(r.Header.Get("Authorization"))
 		if err != nil {
 			http.Error(w, "Unauthorized - Error "+err.Error(), http.StatusUnauthorized)
-			logger.Error(fmt.Errorf("Error while cleaning jwt " + err.Error()))
+			logger.Error(fmt.Errorf("Error while cleaning jwt "+err.Error()), http.StatusUnauthorized)
 			return
 		}
 
@@ -41,7 +54,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		if err != nil || !ok {
 			http.Error(w, "Unauthorized", http.StatusUnauthorized)
 			if err != nil {
-				logger.Error(fmt.Errorf("Error while verifying jwt " + err.Error()))
+				logger.Error(fmt.Errorf("Error while verifying jwt "+err.Error()), http.StatusUnauthorized)
 			}
 			return
 		}
@@ -50,7 +63,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		// user must be admin for CRUD operation on users
 		if (r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
 			http.Error(w, "Forbidden", http.StatusForbidden)
-			logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by " + jwtInfo.Email))
+			logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
 			return
 		}
 
@@ -71,19 +84,19 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 				if err == mongo.ErrNoDocuments {
 					// If the user is not found,
 					// log the error and return a not found response
-					logger.Error(fmt.Errorf("User not found"))
+					logger.Error(fmt.Errorf("User not found"), http.StatusNotFound)
 					http.Error(w, "Forbidden", http.StatusForbidden)
 				} else {
 					// If there is an error retrieving the user,
 					// log the error and return an internal server error response
-					logger.Error(fmt.Errorf("Error getting user"))
+					logger.Error(fmt.Errorf("Error getting user"), http.StatusInternalServerError)
 					http.Error(w, "Error getting user from DB", http.StatusInternalServerError)
 				}
 				return
 			}
 
 			if user.Email != jwtInfo.Email {
-				logger.Error(fmt.Errorf("Forbidden, non admin user trying to access other users info"))
+				logger.Error(fmt.Errorf("Forbidden, non admin user trying to access other users info"), http.StatusForbidden)
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				return
 			}
