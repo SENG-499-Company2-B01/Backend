@@ -30,7 +30,7 @@ jobs:
       run: docker-compose up --build -d  
       
     - name: set permissions 
-      run: sudo chmod 777 mongodb/data/journal
+      run: sudo chmod -R 755 mongodb/data/
 
     - name: Run Tests
       run: go test -v ./...
