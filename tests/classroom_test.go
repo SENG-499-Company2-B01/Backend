@@ -146,7 +146,7 @@ func TestDeleteClassroom(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	req, _ = http.NewRequest("DELETE", "/classrooms/TEST/4", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("DELETE", "/classrooms/Test/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
