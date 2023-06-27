@@ -64,56 +64,54 @@ func init() {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	// // Load the environment variables locally
-	// mongoUsername := os.Getenv("MONGO_USERNAME")
-	// mongoPassword := os.Getenv("MONGO_PASSWORD")
-	// mongoAddress := os.Getenv("MONGO_ADDRESS")
-	// mongoPort := os.Getenv("MONGO_PORT")
+	if os.Getenv("ENVIRONMENT") == "development" {
+		// Load the environment variables locally
+		mongohost := os.Getenv("MONGO_LOCAL_HOST")
+		mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
+		mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
+		
+		// Set up the MongoDB client with SCRAM-SHA-1 authentication
+		clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
+			SetAuth(options.Credential{
+				Username:      mongoUsername,
+				Password:      mongoPassword,
+				AuthMechanism: "SCRAM-SHA-256",
+			})
 
-	// // Set up the MongoDB client with SCRAM-SHA-1 authentication
-	// clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
-	// 	SetAuth(options.Credential{
-	// 		Username:      mongoUsername,
-	// 		Password:      mongoPassword,
-	// 		AuthMechanism: "SCRAM-SHA-256",
-	// 	})
+		client, err = mongo.Connect(context.TODO(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// client, err = mongo.Connect(context.TODO(), clientOptions)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+		// Check the connection
+		err = client.Ping(context.TODO(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// // Check the connection
-	// err = client.Ping(context.TODO(), nil)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+	} else if os.Getenv("ENVIRONMENT") == "production" {
+		// Load the environment variables locally
+		mongoUsername := os.Getenv("MONGO_PRODUCTION_USERNAME")
+		mongoPassword := os.Getenv("MONGO_PRODUCTION_PASSWORD")
+		mongoHost := os.Getenv("MONGO_PRODUCTION_HOST")
 
-	// logger.Info("Connected to MongoDB successfully!")
+		// Use the MongoDB Atlas connection string
+		connectionString := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority", mongoUsername, mongoPassword, mongoHost)
 
-	// Load the environment variables locally
-	mongoProtocol := os.Getenv("MONGO_PROTOCOL")
-	mongoUsername := os.Getenv("MONGO_USERNAME")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	mongoHost := os.Getenv("MONGO_HOST")
+		// Set up client options
+		clientOptions := options.Client().ApplyURI(connectionString)
 
-	// Use the MongoDB Atlas connection string
-	// connectionString := "mongodb+srv://admin:LcKERy6JYJGNdfOZ@company2-mongocluster.p0vfwcg.mongodb.net/?retryWrites=true&w=majority"
-	connectionString := fmt.Sprintf("%s://%s:%s@%s/?retryWrites=true&w=majority", mongoProtocol, mongoUsername, mongoPassword, mongoHost)
+		// Connect to MongoDB
+		client, err = mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// Set up client options
-	clientOptions := options.Client().ApplyURI(connectionString)
-
-	// Connect to MongoDB
-	client, err = mongo.Connect(context.Background(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// Ping the MongoDB server to check the connection
-	err = client.Ping(context.Background(), nil)
-	if err != nil {
-		log.Fatal(err)
+		// Ping the MongoDB server to check the connection
+		err = client.Ping(context.Background(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logger.Info("Connected to MongoDB successfully!")
