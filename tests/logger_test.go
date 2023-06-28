@@ -2,6 +2,7 @@ package tests
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
@@ -11,6 +12,21 @@ import (
 
 	"github.com/SENG-499-Company2-B01/Backend/logger"
 )
+
+type errorMessage struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+func getErrorMessage(err error, code int) string {
+	var errorMessage errorMessage
+
+	errorMessage.Code = code
+	errorMessage.Message = err.Error()
+
+	result, _ := json.Marshal(errorMessage)
+	return string(result)
+}
 
 func TestLoggerInfo(t *testing.T) {
 	// Redirect log output to a buffer for testing
@@ -40,7 +56,7 @@ func TestLoggerWarning(t *testing.T) {
 	logger.InitLogger(&buf, &buf, &buf, nil)
 
 	// Test Warning
-	expectedWarning := fmt.Sprintf("%s \033[1;33m[WARNING]\033[0m   logger_test.go:44 | TestWarningMessage", getTimestamp())
+	expectedWarning := fmt.Sprintf("%s \033[1;33m[WARNING]\033[0m   logger_test.go:60 | TestWarningMessage", getTimestamp())
 	logger.Warning("TestWarningMessage")
 
 	// Verify Warning log message
@@ -60,8 +76,10 @@ func TestLoggerError(t *testing.T) {
 	logger.InitLogger(&buf, &buf, &buf, nil)
 
 	// Test Error
-	expectedError := fmt.Sprintf("%s \033[1;31m[ERROR]\033[0m     logger_test.go:64 | TestErrorMessage", getTimestamp())
-	logger.Error(fmt.Errorf("TestErrorMessage"))
+	err := error(fmt.Errorf("TestErrorMessage"))
+
+	expectedError := fmt.Sprintf("%s \033[1;31m[ERROR]\033[0m     logger_test.go:82 | "+getErrorMessage(err, 0), getTimestamp())
+	logger.Error(fmt.Errorf("TestErrorMessage"), 00)
 
 	// Verify Error log message
 	if got := extractLogMessage(buf.String()); got != expectedError {

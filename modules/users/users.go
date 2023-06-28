@@ -35,7 +35,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
@@ -51,14 +51,14 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error checking the collection: " + err.Error()))
+		logger.Error(fmt.Errorf("Error checking the collection: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error checking the collection.", http.StatusInternalServerError)
 		return
 	}
 	if count > 0 {
 		// If the count is greater than 0, indicating an existing user,
 		// return a conflict response
-		logger.Error(fmt.Errorf("username or email already exists"))
+		logger.Error(fmt.Errorf("username or email already exists"), http.StatusConflict)
 		http.Error(w, "Username or email already exists.", http.StatusConflict)
 		return
 	}
@@ -71,7 +71,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error inserting the user into the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error inserting user: " + err.Error()))
+		logger.Error(fmt.Errorf("Error inserting user: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error inserting user.", http.StatusInternalServerError)
 		return
 	}
@@ -96,7 +96,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 	if err != nil {
 		// If there is an error retrieving users,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error retrieving users: " + err.Error()))
+		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
 		return
 	}
@@ -109,7 +109,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 		if err != nil {
 			// If there is an error decoding a user document,
 			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("Error decoding user document: " + err.Error()))
+			logger.Error(fmt.Errorf("Error decoding user document: "+err.Error()), http.StatusInternalServerError)
 			http.Error(w, "Error decoding user document.", http.StatusInternalServerError)
 			return
 		}
@@ -120,7 +120,7 @@ func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collecti
 	if err := cursor.Err(); err != nil {
 		// If there is an error iterating through the cursor,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error iterating cursor: " + err.Error()))
+		logger.Error(fmt.Errorf("Error iterating cursor: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
 		return
 	}
@@ -150,12 +150,12 @@ func GetUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collectio
 		if err == mongo.ErrNoDocuments {
 			// If the user is not found,
 			// log the error and return a not found response
-			logger.Error(fmt.Errorf("user not found"))
+			logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
 			http.Error(w, "User not found.", http.StatusNotFound)
 		} else {
 			// If there is an error retrieving the user,
 			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("error getting user"))
+			logger.Error(fmt.Errorf("error getting user"), http.StatusInternalServerError)
 			http.Error(w, "Error getting user.", http.StatusInternalServerError)
 		}
 		return
@@ -184,14 +184,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
 		return
 	}
 	if !exists {
 		// If the semester doesn't exist,
 		// return a not found response
-		logger.Error(fmt.Errorf("user not found"))
+		logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
 		http.Error(w, "User not found.", http.StatusInternalServerError)
 		return
 	}
@@ -202,14 +202,14 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error decoding the request body,
 		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: " + err.Error()))
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
 		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
 		return
 	}
 
 	// isAdmin cannot be updated
 	if requestBody["isAdmin"] != nil {
-		logger.Error(fmt.Errorf("isAdmin field cannot be updated"))
+		logger.Error(fmt.Errorf("isAdmin field cannot be updated"), http.StatusInternalServerError)
 		http.Error(w, "isAdmin field cannot be updated.", http.StatusInternalServerError)
 		return
 	}
@@ -223,7 +223,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error updating the user in the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error updating the user: " + err.Error()))
+		logger.Error(fmt.Errorf("Error updating the user: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error updating the user.", http.StatusInternalServerError)
 		return
 	}
@@ -251,14 +251,14 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error querying the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: " + err.Error()))
+		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
 		return
 	}
 	if !exists {
 		// If the user doesn't exist,
 		// return a not found response
-		logger.Error(fmt.Errorf("user not found"))
+		logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
 		http.Error(w, "User not found.", http.StatusInternalServerError)
 		return
 	}
@@ -269,7 +269,7 @@ func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 	if err != nil {
 		// If there is an error deleting the user from the collection,
 		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error deleting the user: " + err.Error()))
+		logger.Error(fmt.Errorf("Error deleting the user: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error deleting the user.", http.StatusInternalServerError)
 		return
 	}
