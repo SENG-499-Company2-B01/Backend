@@ -12,9 +12,9 @@ import (
 	"github.com/SENG-499-Company2-B01/Backend/logger"
 	"github.com/SENG-499-Company2-B01/Backend/modules/classrooms"
 	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
+	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
-	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
@@ -97,8 +97,11 @@ func handleUserRequests(router *mux.Router) {
 		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
 	})
 	// AUTHENTICATION
-	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+	router.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		users.Logout(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
 
 	// Users CRUD Operations
