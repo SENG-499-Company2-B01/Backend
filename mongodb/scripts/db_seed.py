@@ -1,7 +1,8 @@
 import pandas as pd  
 from pymongo import MongoClient 
 from dotenv import load_dotenv
-import os 
+import os  
+import bcrypt
 
 def check_if_not_empty(coll,coll_name):  
 
@@ -11,7 +12,14 @@ def check_if_not_empty(coll,coll_name):
         return True  
     
     print("INFO: No data found in %s collection ... inserting data" %(coll_name))
-    return False
+    return False 
+
+def gen_pw(input,secret): 
+
+    input = input + secret 
+    bytes = input.encode('utf-8') 
+    salt = bcrypt.gensalt() 
+    return bcrypt.hashpw(bytes,salt)
 
 def load_users(coll): 
 
@@ -19,7 +27,8 @@ def load_users(coll):
         return   
     
     admin_1 = os.getenv("ADMIN_1") 
-    admin_2 = os.getenv("ADMIN_2")
+    admin_2 = os.getenv("ADMIN_2") 
+    pw_secret = os.getenv("PW_SECRET")
 
 
     users_df = pd.read_csv("users.csv").fillna('')
@@ -30,7 +39,7 @@ def load_users(coll):
         user = {} 
         user['username'] = row['Firstname'] + '.' + row['Lastname'] 
         user['email'] = row['Email'] 
-        user['password'] = '' 
+        user['password'] = gen_pw(user['username'],pw_secret)
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
 
