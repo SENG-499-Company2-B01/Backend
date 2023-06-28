@@ -16,7 +16,7 @@ def check_if_not_empty(coll,coll_name):
 
 def gen_pw(input,secret): 
 
-    input = input + secret 
+    input = input + str(secret)
     bytes = input.encode('utf-8') 
     salt = bcrypt.gensalt() 
     return bcrypt.hashpw(bytes,salt)
@@ -43,8 +43,7 @@ def load_users(coll):
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
 
-        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2: 
-            print("ADMIN FOUND!")
+        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
         else: 
             user['isAdmin'] = False
