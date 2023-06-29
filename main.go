@@ -69,7 +69,7 @@ func init() {
 		mongohost := os.Getenv("MONGO_LOCAL_HOST")
 		mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
 		mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
-		
+
 		// Set up the MongoDB client with SCRAM-SHA-1 authentication
 		clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
 			SetAuth(options.Credential{
@@ -118,7 +118,6 @@ func init() {
 }
 
 func handleUserRequests(router *mux.Router) {
-	// router.Use(middleware.Users_API_Access_Control)
 	router.Use(func(next http.Handler) http.Handler {
 		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
 	})
