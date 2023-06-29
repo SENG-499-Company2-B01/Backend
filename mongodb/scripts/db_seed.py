@@ -19,7 +19,21 @@ def gen_pw(input,secret):
     input = input + str(secret)
     bytes = input.encode('utf-8') 
     salt = bcrypt.gensalt() 
-    return bcrypt.hashpw(bytes,salt)
+    return bcrypt.hashpw(bytes,salt) 
+
+def parse_prereq(input): 
+
+    input = input.replace('[','').replace(']','') 
+
+    if input == '': 
+        return [['']] 
+    
+    output = input.split(",") 
+    for i in range(len(output)): 
+        output[i] = output[i].split(":") 
+
+    return output
+
 
 def load_users(coll): 
 
@@ -69,13 +83,13 @@ def load_courses(coll):
     courses_df = pd.read_csv("courses.csv")  
 
     for index, row in courses_df.iterrows(): 
-
+        
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
         course['offered'] = row['Offered'] 
         course['equipment'] = [] 
-        course['prerequisites'] = [] 
+        course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 
 
