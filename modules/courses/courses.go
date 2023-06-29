@@ -15,10 +15,10 @@ import (
 )
 
 type Course struct {
-	ShortHand     string   `json:"shorthand" bson:"shorthand"`
-	Name          string   `json:"name" bson:"name"`
-	Equipements   []string `json:"equipment" bson:"equipements"`
-	Prerequisites []string `json:"prerequisites" bson:"prerequisites"`
+	ShortHand     string     `json:"shorthand" bson:"shorthand"`
+	Name          string     `json:"name" bson:"name"`
+	Equipements   []string   `json:"equipment" bson:"equipements"`
+	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
 }
 
 // CreateCourse - creates a new course in the course DB

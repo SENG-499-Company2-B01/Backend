@@ -1,7 +1,8 @@
 import pandas as pd  
 from pymongo import MongoClient 
 from dotenv import load_dotenv
-import os 
+import os  
+import bcrypt
 
 def check_if_not_empty(coll,coll_name):  
 
@@ -11,7 +12,28 @@ def check_if_not_empty(coll,coll_name):
         return True  
     
     print("INFO: No data found in %s collection ... inserting data" %(coll_name))
-    return False
+    return False 
+
+def gen_pw(input,secret): 
+
+    input = input + str(secret)
+    bytes = input.encode('utf-8') 
+    salt = bcrypt.gensalt() 
+    return bcrypt.hashpw(bytes,salt) 
+
+def parse_prereq(input): 
+
+    input = input.replace('[','').replace(']','') 
+
+    if input == '': 
+        return [['']] 
+    
+    output = input.split(",") 
+    for i in range(len(output)): 
+        output[i] = output[i].split(":") 
+
+    return output
+
 
 def load_users(coll): 
 
@@ -19,7 +41,8 @@ def load_users(coll):
         return   
     
     admin_1 = os.getenv("ADMIN_1") 
-    admin_2 = os.getenv("ADMIN_2")
+    admin_2 = os.getenv("ADMIN_2") 
+    pw_secret = os.getenv("PW_SECRET")
 
 
     users_df = pd.read_csv("users.csv").fillna('')
@@ -30,12 +53,11 @@ def load_users(coll):
         user = {} 
         user['username'] = row['Firstname'] + '.' + row['Lastname'] 
         user['email'] = row['Email'] 
-        user['password'] = '' 
+        user['password'] = gen_pw(user['username'],pw_secret)
         user['firstname'] = row['Firstname'] 
         user['lastname'] = row['Lastname'] 
 
-        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2: 
-            print("ADMIN FOUND!")
+        if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
         else: 
             user['isAdmin'] = False
@@ -61,13 +83,13 @@ def load_courses(coll):
     courses_df = pd.read_csv("courses.csv")  
 
     for index, row in courses_df.iterrows(): 
-
+        
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
         course['offered'] = row['Offered'] 
         course['equipment'] = [] 
-        course['prerequisites'] = [] 
+        course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 
 

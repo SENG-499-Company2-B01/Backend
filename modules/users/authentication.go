@@ -14,7 +14,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/SENG-499-Company2-B01/Backend/logger"
+	"golang.org/x/crypto/bcrypt"
 )
+
+func verify_pw(hash, pw string) bool {
+
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pw))
+	return err == nil
+}
 
 // SignIn: Does Sign In process, and returns jwt token and user role
 func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
@@ -42,7 +49,8 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 		return
 	}
 
-	if signInReq.Username != user.Username || signInReq.Password != user.Password {
+	pw_correct := verify_pw(user.Password, signInReq.Password)
+	if signInReq.Username != user.Username || !pw_correct {
 		logger.Error(fmt.Errorf("username or Password Incorrect"), http.StatusNotFound)
 		http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 		return
