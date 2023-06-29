@@ -30,7 +30,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	var user User
 	// Retrieve the user credentials from the MongoDB collection
-	filter := bson.M{"email": signInReq.Email}
+	filter := bson.M{"username": signInReq.Username}
 	err = collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
@@ -42,7 +42,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 		return
 	}
 
-	if signInReq.Email != user.Email || signInReq.Password != user.Password {
+	if signInReq.Username != user.Username || signInReq.Password != user.Password {
 		logger.Error(fmt.Errorf("username or Password Incorrect"), http.StatusNotFound)
 		http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 		return
@@ -68,4 +68,10 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	// Uncomment the follow line for debugging
 	// logger.Info("Signin function completed.")
+}
+
+// Empty function to match partern company specs. Client will need to delete JWT.
+func Logout(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Delete your token."))
 }
