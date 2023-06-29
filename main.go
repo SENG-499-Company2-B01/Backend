@@ -12,6 +12,7 @@ import (
 	"github.com/SENG-499-Company2-B01/Backend/logger"
 	"github.com/SENG-499-Company2-B01/Backend/modules/classrooms"
 	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
+	"github.com/SENG-499-Company2-B01/Backend/modules/health"
 	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
@@ -63,29 +64,54 @@ func init() {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	// Load the environment variables locally
-	mongoUsername := os.Getenv("MONGO_USERNAME")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	mongoAddress := os.Getenv("MONGO_ADDRESS")
-	mongoPort := os.Getenv("MONGO_PORT")
+	if os.Getenv("ENVIRONMENT") == "development" {
+		// Load the environment variables locally
+		mongohost := os.Getenv("MONGO_LOCAL_HOST")
+		mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
+		mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
+		
+		// Set up the MongoDB client with SCRAM-SHA-1 authentication
+		clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
+			SetAuth(options.Credential{
+				Username:      mongoUsername,
+				Password:      mongoPassword,
+				AuthMechanism: "SCRAM-SHA-256",
+			})
 
-	// Set up the MongoDB client with SCRAM-SHA-1 authentication
-	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
-		SetAuth(options.Credential{
-			Username:      mongoUsername,
-			Password:      mongoPassword,
-			AuthMechanism: "SCRAM-SHA-256",
-		})
+		client, err = mongo.Connect(context.TODO(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	client, err = mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
+		// Check the connection
+		err = client.Ping(context.TODO(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
+	} else if os.Getenv("ENVIRONMENT") == "production" {
+		// Load the environment variables locally
+		mongoUsername := os.Getenv("MONGO_PRODUCTION_USERNAME")
+		mongoPassword := os.Getenv("MONGO_PRODUCTION_PASSWORD")
+		mongoHost := os.Getenv("MONGO_PRODUCTION_HOST")
+
+		// Use the MongoDB Atlas connection string
+		connectionString := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority", mongoUsername, mongoPassword, mongoHost)
+
+		// Set up client options
+		clientOptions := options.Client().ApplyURI(connectionString)
+
+		// Connect to MongoDB
+		client, err = mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Ping the MongoDB server to check the connection
+		err = client.Ping(context.Background(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logger.Info("Connected to MongoDB successfully!")
@@ -96,6 +122,7 @@ func handleUserRequests(router *mux.Router) {
 	router.Use(func(next http.Handler) http.Handler {
 		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
 	})
+
 	// AUTHENTICATION
 	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
@@ -206,12 +233,17 @@ func main() {
 	// logger.Info("This is an info message")
 	// logger.Warning("This is a warning message")
 	// logger.Error(fmt.Errorf("This is an error message"))
-	
+
 	router := mux.NewRouter()
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
+
+	// This route will be used by the cloud server to test its health, it only ever returns 200 OK
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		health.CheckHealth(w, r)
+	}).Methods(http.MethodGet)
 
 	log.Fatal(http.ListenAndServe(":8000", router))
 }

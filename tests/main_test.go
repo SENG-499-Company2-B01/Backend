@@ -67,13 +67,12 @@ func init() {
 	}
 
 	// Load the environment variables locally
-	mongoUsername := os.Getenv("MONGO_USERNAME")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	mongoAddress := os.Getenv("MONGO_ADDRESS")
-	mongoPort := os.Getenv("MONGO_PORT")
-
+	mongohost := os.Getenv("MONGO_LOCAL_HOST")
+	mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
+	mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
+	
 	// Set up the MongoDB client with SCRAM-SHA-1 authentication
-	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
+	clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
 		SetAuth(options.Credential{
 			Username:      mongoUsername,
 			Password:      mongoPassword,

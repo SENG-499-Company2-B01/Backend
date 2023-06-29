@@ -99,12 +99,11 @@ def db_seed():
 
     load_dotenv()
 
-    mongo_user = os.getenv("MONGO_USERNAME")
-    mongo_pw = os.getenv("MONGO_PASSWORD")
-    mongo_ip = os.getenv("MONGO_ADDRESS")
-    mongo_port = os.getenv("MONGO_PORT")   
+    mongo_user = os.getenv("MONGO_LOCAL_USERNAME")
+    mongo_pw = os.getenv("MONGO_LOCAL_PASSWORD")
+    mongo_host = os.getenv("MONGO_LOCAL_HOST") 
 
-    conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_ip+':'+mongo_port+'/')
+    conn = MongoClient('mongodb://'+mongo_user+':'+mongo_pw+'@'+mongo_host+'/')
     db = conn['schedule_db']
 
     user_collection = db['users']  
