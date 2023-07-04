@@ -19,6 +19,43 @@ func setupCORS(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding")
 }
 
+func fetch_email(path string, collection *mongo.Collection) string {
+
+	username := strings.TrimPrefix(path, "/users/")
+	username = strings.TrimSpace(username)
+
+	filter := bson.M{"username": username}
+	var user users.User
+	err := collection.FindOne(context.TODO(), filter).Decode(&user)
+
+	if err != nil {
+		if err == mongo.ErrNoDocuments {
+			// If the user is not found,
+			// log the error and return a not found response
+			logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
+		} else {
+			logger.Error(fmt.Errorf("error getting user"), http.StatusInternalServerError)
+		}
+		return ""
+	}
+
+	return user.Email
+
+}
+
+func valid_permissions(r *http.Request, isAdmin bool, jwt_email string, collection *mongo.Collection) bool {
+
+	if r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE" {
+		if isAdmin {
+			return true
+		}
+		// If we have a non-admin token, a user can only update themselves
+		return jwt_email == fetch_email(r.URL.Path, collection)
+	}
+
+	return true
+}
+
 // Middleware function, which will be called for each request
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -77,7 +114,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		// Role based access for users endpoints
 		if strings.Contains(r.URL.Path, "/users") {
 			// user must be admin for CRUD operation on users
-			if (r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
+			if !valid_permissions(r, jwtInfo.IsAdmin, jwtInfo.Email, collection) {
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
 				return

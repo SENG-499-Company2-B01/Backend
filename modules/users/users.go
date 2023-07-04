@@ -15,17 +15,19 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username       string            `json:"username" bson:"username"`
-	Email          string            `json:"email" bson:"email"`
-	Password       string            `json:"password" bson:"password"`
-	Firstname      string            `json:"firstname" bson:"firstname"`
-	LastName       string            `json:"lastname" bson:"lastname"`
-	IsAdmin        bool              `json:"-" bson:"isAdmin"`
-	Preferences    map[string]string `json:"preferences" bson:"preferences"`
-	Qualifications []string          `json:"qualifications" bson:"qualifications"`
+	Username      string                `json:"username" bson:"username"`
+	Email         string                `json:"email" bson:"email"`
+	Password      string                `json:"password" bson:"password"`
+	Firstname     string                `json:"firstname" bson:"firstname"`
+	LastName      string                `json:"lastname" bson:"lastname"`
+	IsAdmin       bool                  `json:"-" bson:"isAdmin"`
+	Peng          bool                  `json:"peng" bson:"peng"`
+	Pref_approved bool                  `json:"pref_approved" bson:"pref_approved"`
+	Max_courses   int                   `json:"max_courses" bson:"max_courses"`
+	Course_pref   []string              `json:"course_pref" bson:"course_pref"`
+	Unavailable   map[string][][]string `json:"unavailable" bson:"unavailable"`
 }
 
-// CreateUser handles the creation of a new user
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("CreateUser function called.")
 
@@ -234,52 +236,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 
 	// Uncomment the follow line for debugging
 	// logger.Info("UpdateUser function completed.")
-}
-
-// DeleteUser handles the deletion of a user
-func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("DeleteUser function called.")
-
-	// Extract the user username from the URL path
-	path := r.URL.Path
-	username := strings.TrimPrefix(path, "/users/")
-	username = strings.TrimSpace(username)
-
-	// Check if the user exists in the collection
-	filter := bson.M{"username": username}
-	exists, err := userExists(filter, collection)
-	if err != nil {
-		// If there is an error querying the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
-		return
-	}
-	if !exists {
-		// If the user doesn't exist,
-		// return a not found response
-		logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
-		http.Error(w, "User not found.", http.StatusInternalServerError)
-		return
-	}
-
-	// Delete the user from the MongoDB collection
-	filter = bson.M{"username": username}
-	_, err = collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		// If there is an error deleting the user from the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error deleting the user: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error deleting the user.", http.StatusInternalServerError)
-		return
-	}
-
-	// Send a response indicating successful user deletion
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User deleted successfully.")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("DeleteUser function completed.")
 }
 
 // userExists checks if a document exists in the collection based on a filter

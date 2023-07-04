@@ -70,7 +70,7 @@ func init() {
 	mongohost := os.Getenv("MONGO_LOCAL_HOST")
 	mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
 	mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
-	
+
 	// Set up the MongoDB client with SCRAM-SHA-1 authentication
 	clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
 		SetAuth(options.Credential{
@@ -120,11 +120,6 @@ func handleUserRequests(router *mux.Router) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
 
-	// Users CRUD Operations
-	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
-	}).Methods(http.MethodPost)
-
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.GetUsers(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodGet)
@@ -136,10 +131,6 @@ func handleUserRequests(router *mux.Router) {
 	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		users.UpdateUser(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPut)
-
-	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
-		users.DeleteUser(w, r, client.Database("schedule_db").Collection("users"))
-	}).Methods(http.MethodDelete)
 }
 
 func handleClassroomRequests(router *mux.Router) {
@@ -189,31 +180,23 @@ func handleCourseRequests(router *mux.Router) {
 }
 
 func handleScheduleRequests(router *mux.Router) {
-	// Schedules CRUD Operations
+	// Schedules Read Operation
 	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.CreateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodGet)
+
+	// Schedules Generation Endpoints
+	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodPost)
 
-	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("schedules"))
+	// Previous Schedule Operations
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("previous_schedules"))
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodGet)
-
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodPut)
-
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodDelete)
-
-	// Run Schedule Generation
-	// NOTE: Still needs to implemented after algo team sets up REST APIs
-	router.HandleFunc("/generate_schedule", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.ApproveSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"), client.Database("schedule_db").Collection("previous_schedules"))
 	}).Methods(http.MethodPost)
 }
 
