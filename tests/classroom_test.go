@@ -20,7 +20,6 @@ func TestInsertClassroom(t *testing.T) {
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "12"
-	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
@@ -48,13 +47,11 @@ func TestGetClassrooms(t *testing.T) {
 	n1Classroom.Building = "Test Building"
 	n1Classroom.Capacity = 100
 	n1Classroom.Room_number = "12"
-	n1Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	n2Classroom.Shorthand = "Test2"
 	n2Classroom.Building = "Test Building"
 	n2Classroom.Capacity = 100
 	n2Classroom.Room_number = "12"
-	n2Classroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(n1Classroom)
 	payload := []byte(requestBody)
@@ -99,7 +96,6 @@ func TestGetClassroom(t *testing.T) {
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "2"
-	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
@@ -134,7 +130,6 @@ func TestDeleteClassroom(t *testing.T) {
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "4"
-	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
@@ -169,7 +164,6 @@ func TestUpdateClassroom(t *testing.T) {
 	nClassroom.Building = "Test Building"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "4"
-	nClassroom.Equipment = []string{"Test Equipment 1", "Test Equipment 2"}
 
 	requestBody, _ := json.Marshal(nClassroom)
 	payload := []byte(requestBody)
