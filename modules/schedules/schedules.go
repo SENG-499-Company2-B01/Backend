@@ -15,20 +15,50 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Semester string           `json:"semester"`
-	Classes  map[string]Class `json:"classes"`
+	Year  string `json:"year"`
+	Terms []Term `json:"terms"`
+}
+
+type Term struct {
+	Term    string           `json:"term"`
+	Courses []CourseOffering `json:"courses"`
+}
+
+type CourseOffering struct {
+	Course   string  `json:"course"`
+	Sections []Class `json:"sections"`
 }
 
 type Class struct {
-	Course  string `json:"course"`
-	Teacher string `json:"teacher"`
-	Room    string `json:"room"`
+	Num       string   `json:"num"`
+	Building  string   `json:"building"`
+	Professor string   `json:"professor"`
+	Days      []string `json:"days"`
+	NumSeats  int      `json:"num_seats"`
+	StartTime string   `json:"start_time"`
+	EndTime   string   `json:"end_time"`
 }
 
 // GenerateSchedule - Generates a new schedule
 // TODO: Still needs to be implemented once algo team sets up their REST API
 func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GenerateSchedule function called.")
+
+	// Extract the year and term values from the URL path
+	path := strings.Split(r.URL.Path, "/")
+	if len(path) < 4 {
+		// If there is an error parsing the url path,
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("invalid URL path"), http.StatusBadRequest)
+		http.Error(w, "Invalid URL path.", http.StatusBadRequest)
+		return
+	}
+
+	// Extract the year and term from path
+	// year := path[2]
+	// term := path[3]
+
+	// TODO: finish this function
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
@@ -38,37 +68,41 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.
 	// logger.Info("GenerateSchedule function completed.")
 }
 
-// CreateSchedule handles the creation of a new schedule
-func CreateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("CreateSchedule function called.")
+// ApproveSchedule - removes schedule in draft collection and adds it to previous_schedules collection, approving it.
+func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *mongo.Collection, previousSchedulesCollection *mongo.Collection) {
+	logger.Info("ApproveSchedule function called.")
 
-	// Parse request body into Schedule struct
-	var newSchedule Schedule
-	err := json.NewDecoder(r.Body).Decode(&newSchedule)
+	// Find the schedule in the "draft_schedule" collection
+	var foundSchedule Schedule
+	err := draftsCollection.FindOne(context.TODO(), bson.M{}).Decode(&foundSchedule)
 	if err != nil {
-		// If there is an error decoding the request body,
-		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
-		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+		logger.Error(fmt.Errorf("failed to find schedule in drafts collection"), http.StatusInternalServerError)
+		http.Error(w, "Failed to find schedule.", http.StatusInternalServerError)
 		return
 	}
 
-	// Insert the schedule into the MongoDB collection
-	_, err = collection.InsertOne(context.TODO(), newSchedule)
+	// Insert the found schedule into the "previous_schedules" collection
+	_, err = previousSchedulesCollection.InsertOne(context.TODO(), foundSchedule)
 	if err != nil {
-		// If there is an error inserting the schedule into the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error inserting schedule: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error inserting schedule.", http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("failed to insert schedule into previous_schedules collection"), http.StatusInternalServerError)
+		http.Error(w, "Failed to insert schedule.", http.StatusInternalServerError)
+		return
+	}
+
+	// Delete the schedule from the "draft_schedule" collection
+	_, err = draftsCollection.DeleteOne(context.TODO(), bson.M{})
+	if err != nil {
+		logger.Error(fmt.Errorf("failed to delete from drafts collection"), http.StatusInternalServerError)
+		http.Error(w, "Failed to delete schedule.", http.StatusInternalServerError)
 		return
 	}
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Schedule created successfully")
+	fmt.Fprintf(w, "Schedule has been approved")
 
 	// Uncomment the follow line for debugging
-	// logger.Info("CreateSchedule function completed.")
+	// logger.Info("ApproveSchedule function completed.")
 }
 
 // GetSchedules retrieves all schedules from the MongoDB collection
@@ -118,153 +152,4 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 
 	// Uncomment the follow line for debugging
 	// logger.Info("GetSchedules function completed.")
-}
-
-// GetSchedule retrieves a schedule by username
-func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("GetSchedule function called.")
-
-	// Extract the schedule semester from the URL path
-	path := r.URL.Path
-	semester := strings.TrimPrefix(path, "/schedules/")
-	semester = strings.TrimSpace(semester)
-
-	// Retrieve the schedule from the MongoDB collection
-	filter := bson.M{"semester": semester}
-	var schedule Schedule
-	err := collection.FindOne(context.TODO(), filter).Decode(&schedule)
-	if err != nil {
-		if err == mongo.ErrNoDocuments {
-			// If the schedule is not found,
-			// log the error and return a not found response
-			logger.Error(fmt.Errorf("Schedule not found: "+err.Error()), http.StatusNotFound)
-			http.Error(w, "Schedule not found.", http.StatusNotFound)
-		} else {
-			// If there is an error retrieving the schedule,
-			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("Error getting schedule: "+err.Error()), http.StatusInternalServerError)
-			http.Error(w, "Error getting schedule.", http.StatusInternalServerError)
-		}
-		return
-	}
-
-	// Send a response with the retrieved schedule
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(schedule)
-
-	// Uncomment the follow line for debugging
-	// logger.Info("GetSchedule function completed.")
-}
-
-// UpdateSchedule handles updating an existing schedule
-func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("UpdateSchedule function called.")
-
-	// Extract the schedule semester from the URL path
-	path := r.URL.Path
-	semester := strings.TrimPrefix(path, "/schedules/")
-	semester = strings.TrimSpace(semester)
-
-	// Check if the semester exists in the collection
-	filter := bson.M{"semester": semester}
-	exists, err := scheduleExists(filter, collection)
-	if err != nil {
-		// If there is an error querying the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
-		return
-	}
-	if !exists {
-		// If the semester doesn't exist,
-		// return a not found response
-		logger.Error(fmt.Errorf("semester not found"), http.StatusInternalServerError)
-		http.Error(w, "Semester not found.", http.StatusInternalServerError)
-		return
-	}
-
-	// Parse request body into a map
-	var requestBody map[string]interface{}
-	err = json.NewDecoder(r.Body).Decode(&requestBody)
-	if err != nil {
-		// If there is an error decoding the request body,
-		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
-		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
-		return
-	}
-
-	// Construct the update query
-	update := bson.M{"$set": requestBody}
-
-	// Update the schedule in the MongoDB collection
-	_, err = collection.UpdateOne(context.TODO(), filter, update)
-	if err != nil {
-		// If there is an error updating the schedule in the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error updating schedule: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error updating schedule.", http.StatusInternalServerError)
-		return
-	}
-
-	// Send a response indicating successful schedule update
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Schedule updated successfully")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("UpdateSchedule function completed.")
-}
-
-// DeleteSchedule handles the deletion of a schedule
-func DeleteSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("DeleteSchedule function called.")
-
-	// Extract the schedule semester from the URL path
-	path := r.URL.Path
-	semester := strings.TrimPrefix(path, "/schedules/")
-	semester = strings.TrimSpace(semester)
-
-	// Check if the semester exists in the collection
-	filter := bson.M{"semester": semester}
-	exists, err := scheduleExists(filter, collection)
-	if err != nil {
-		// If there is an error querying the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
-		return
-	}
-	if !exists {
-		// If the semester doesn't exist,
-		// return a not found response
-		logger.Error(fmt.Errorf("semester not found"), http.StatusInternalServerError)
-		http.Error(w, "Semester not found.", http.StatusInternalServerError)
-		return
-	}
-
-	// Delete the schedule from the MongoDB collection
-	_, err = collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		// If there is an error deleting the schedule from the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error deleting schedule: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error deleting schedule.", http.StatusInternalServerError)
-		return
-	}
-
-	// Send a response indicating successful schedule deletion
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Schedule deleted successfully")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("DeleteSchedule function completed.")
-}
-
-// scheduleExists checks if a document exists in the collection based on a filter
-func scheduleExists(filter bson.M, collection *mongo.Collection) (bool, error) {
-	count, err := collection.CountDocuments(context.TODO(), filter, nil)
-	if err != nil {
-		return false, err
-	}
-	return count > 0, nil
 }
