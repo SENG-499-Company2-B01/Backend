@@ -199,6 +199,16 @@ func handleCourseRequests(router *mux.Router) {
 }
 
 func handleScheduleRequests(router *mux.Router) {
+
+	// Past Schedules CRUD Operations
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.CreatePrevSchedule(w, r, client.Database("schedule_db").Collection("past_schedules"))
+	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetPrevSchedules(w, r, client.Database("schedule_db").Collection("past_schedules"))
+	}).Methods(http.MethodGet)
+
 	// Schedules CRUD Operations
 	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
 		schedules.CreateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))

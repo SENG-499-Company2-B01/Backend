@@ -23,8 +23,8 @@ func setupCORS(w http.ResponseWriter, r *http.Request) {
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// ignore if this is not a call to users
-		if !strings.Contains(r.URL.Path, "/users") {
+		// ignore if this is not a call to users or prev schedules
+		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/schedules/prev") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
@@ -64,49 +64,60 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			}
 			return
 		}
-		fmt.Println(token)
 
-		// user must be admin for CRUD operation on users
-		if (r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
-			http.Error(w, "Forbidden", http.StatusForbidden)
-			logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
-			return
+		// Role based access for previous schedules endpoints
+		if r.URL.Path == "/schedules/prev" {
+			if !jwtInfo.IsAdmin {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - /schedules/prev CRUD operation requested by non admin - "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
 		}
 
-		// if user is not admin then they can only get their
-		if (r.Method == "GET") && !jwtInfo.IsAdmin {
-			// Extract the user username from the URL path
-			path := r.URL.Path
-			username := strings.TrimPrefix(path, "/users/")
-			username = strings.TrimSpace(username)
-
-			// NOTE: check for get all user from non admin
-
-			// Retrieve the user from the MongoDB collection
-			var user users.User
-			filter := bson.M{"username": username}
-			err := collection.FindOne(context.TODO(), filter).Decode(&user)
-			if err != nil {
-				if err == mongo.ErrNoDocuments {
-					// If the user is not found,
-					// log the error and return a not found response
-					logger.Error(fmt.Errorf("User not found"), http.StatusNotFound)
-					http.Error(w, "Forbidden", http.StatusForbidden)
-				} else {
-					// If there is an error retrieving the user,
-					// log the error and return an internal server error response
-					logger.Error(fmt.Errorf("Error getting user"), http.StatusInternalServerError)
-					http.Error(w, "Error getting user from DB", http.StatusInternalServerError)
-				}
-				return
-			}
-
-			if user.Email != jwtInfo.Email {
-				logger.Error(fmt.Errorf("Forbidden, non admin user trying to access other users info"), http.StatusForbidden)
+		// Role based access for users endpoints
+		if strings.Contains(r.URL.Path, "/users") {
+			// user must be admin for CRUD operation on users
+			if (r.Method == "POST" || r.Method == "PUT" || r.Method == "PATCH" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
 				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
 				return
 			}
 
+			// if user is not admin then they can only get their
+			if (r.Method == "GET") && !jwtInfo.IsAdmin {
+				// Extract the user username from the URL path
+				path := r.URL.Path
+				username := strings.TrimPrefix(path, "/users/")
+				username = strings.TrimSpace(username)
+
+				// NOTE: check for get all user from non admin
+
+				// Retrieve the user from the MongoDB collection
+				var user users.User
+				filter := bson.M{"username": username}
+				err := collection.FindOne(context.TODO(), filter).Decode(&user)
+				if err != nil {
+					if err == mongo.ErrNoDocuments {
+						// If the user is not found,
+						// log the error and return a not found response
+						logger.Error(fmt.Errorf("User not found"), http.StatusNotFound)
+						http.Error(w, "Forbidden", http.StatusForbidden)
+					} else {
+						// If there is an error retrieving the user,
+						// log the error and return an internal server error response
+						logger.Error(fmt.Errorf("Error getting user"), http.StatusInternalServerError)
+						http.Error(w, "Error getting user from DB", http.StatusInternalServerError)
+					}
+					return
+				}
+
+				if user.Email != jwtInfo.Email {
+					logger.Error(fmt.Errorf("Forbidden, non admin user trying to access other users info"), http.StatusForbidden)
+					http.Error(w, "Forbidden", http.StatusForbidden)
+					return
+				}
+
+			}
 		}
 
 		setupCORS(w, r)
