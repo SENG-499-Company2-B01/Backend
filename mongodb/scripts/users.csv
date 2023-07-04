@@ -1,64 +1,64 @@
-Firstname,Lastname,Email,Credentials
-Celina,Berg,celinag@uvic.ca,"[CSC 111, SENG 310, SENG 435]"
-Bill,Bird,bbird@uvic.ca,"[CSC 111, CSC 355, SENG 310, SENG 435, SENG 466]"
-Sean,Chester,schester@uvic.ca,"[CSC 111, CSC 115, SENG 275, CSC 361, CSC 460]"
-Jason,Corless,-,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, CSC 355, CSC 361, CSC 460]"
-Daniela,Damian,danielad@uvic.ca,"[CSC 111, CSC 225, CSC 230, CSC 355, CSC 360, CSC 370, SENG 421]"
-Neil,Ernst,nernst@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 230, CSC 355, CSC 360, SENG 310, SENG 401, SENG 411, SENG 421, SENG 435, SENG 466, SENG 474]"
-Anthony,Estey,aestey@uvic.ca,"[CSC 115, CSC 226, SENG 275]"
-Sudhakar,Ganti,sganti@uvic.ca,"[CSC 111, CSC 115, CSC 355]"
-Daniel,German,dmg@uvic.ca,"[CSC 111, CSC 230, SENG 265, CSC 361, SENG 321, SENG 350, CSC 460, SENG 401, SENG 421]"
-Brandon,Haworth,bhaworth@uvic.ca,"[CSC 111, CSC 115, CSC 226, CSC 355, CSC 360]"
-Hosna,Jabbari,jabbari@uvic.ca,[CSC 111]
-LillAnne,Jackson,engradu@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, SENG 371]"
-Bruce,Kapron,bmkapron@uvic.ca,"[CSC 111, CSC 225, CSC 355, CSC 361, CSC 370]"
-Valerie,King,val@uvic.ca,"[CSC 230, SENG 265, CSC 370, SENG 321, SENG 350, SENG 360, SENG 401, SENG 421]"
-Sajin,Koroth,skoroth@uvic.ca,"[CSC 111, CSC 355, SENG 310, SENG 435, SENG 466]"
-Rich,Little,rlittle@uvic.ca,"[SENG 265, SENG 310, CSC 460, SENG 421, SENG 435, SENG 466]"
-Nishant,Mehta,nmehta@uvic.ca,"[CSC 115, CSC 226, SENG 275]"
-Hausi,Muller,hausi@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, SENG 265, SENG 275, CSC 320, CSC 355, CSC 360]"
-Miguel,Nacenta,nacenta@uvic.ca,"[CSC 230, SENG 310, SENG 321, SENG 421, SENG 435, SENG 466]"
-Ibrahim,Numanagić,inumanag@uvic.ca,"[SENG 310, SENG 435, SENG 474, CSC 330]"
-Jianping,Pan,pan@uvic.ca,"[CSC 226, SENG 371, SENG 421]"
-Charles,Perin,cperin@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, SENG 275, CSC 355, CSC 370, SENG 421]"
-Teseo,Schneider,teseo@uvic.ca,"[CSC 115, CSC 226, CSC 230, CSC 355, CSC 361, SENG 321, SENG 401, SENG 411]"
-Sowmya,Somanath,sowmyasomanath@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 230, CSC 320, CSC 355, CSC 360, CSC 361, SENG 350]"
-Venkatesh,Srinivasan,srinivas@uvic.ca,"[CSC 225, CSC 320, CSC 355, CSC 360, SENG 350]"
-Ulrike,Stege,ustege@uvic.ca,[CSC 115]
-Margaret-Anne,Storey,mstorey@uvic.ca,"[CSC 226, SENG 371, SENG 421]"
-Cecilia,Summers,-,"[CSC 226, SENG 275, SENG 421]"
-Alex,Thomo,thomo@uvic.ca,"[CSC 111, CSC 115, CSC 226, CSC 370, SENG 371]"
-George,Tzanetakis,gtzan@cs.uvic.ca,"[CSC 115, CSC 355, CSC 370, SENG 371]"
-Jens,Weber,jens@uvic.ca,"[CSC 230, SENG 321]"
-Kui,Wu,wkui@uvic.ca,"[CSC 111, CSC 225, CSC 230, CSC 355, CSC 360, SENG 360, SENG 411, SENG 421]"
-Michael,Zastre,zastre@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, SENG 275, CSC 355, CSC 360, SENG 310]"
-Michael,Adams,frodo@uvic.ca,"[ECE 260, SENG 475]"
-Panajotis,Agathoklis,panagath@ece.uvic.ca,"[ECE 310, ECE 360]"
-Riham,AlTawy,raltawy@uvic.ca,
-Amirali,Baniasadi,amiralib@uvic.ca,
-Jens,Bornemann,jbornema@ece.uvic.ca,
-Alexandra,Branzan Albu,aalbu@uvic.ca,
-Lin,Cai,cai@ece.uvic.ca,
-David,Capson,capson@uvic.ca,[ECE 355]
-Thomas,Darcie,tdarcie@uvic.ca,
-Nikitas,Dimopoulos,nikitas@ece.uvic.ca,
-Xiaodai,Dong,xdong@ece.uvic.ca,
-Peter,Driessen,peter@ece.uvic.ca,
-Fayez,Gebali,-,[ECE 360]
-Reuven,Gordon,rgordon@uvic.ca,
-Aaron,Gulliver,agullive@engr.uvic.ca,
-Kin Fun,Li,kinli@uvic.ca,
-Tao,Lu,taolu@ece.uvic.ca,
-Michael,McGuire,mmcguire@uvic.ca,"[ECE 310, ECE 360, ECE 485]"
-Stephen,Neville,sneville@ece.uvic.ca,"[ECE 485, SENG 468, SENG 499]"
-Christo,Papadopoulos,papdop@uvic.ca,
-Navneet,Popli,npopli@uvic.ca,"[SENG 499, SENG 468, ECE 458, SENG 275]"
-Daler,Rakhmatov,daler@ece.uvic.ca,
-Makhsud,Saidaminov,msaidaminov@uvic.ca,
-Sana,Shuja,sanashuja@uvic.ca,"[ECE 310, ECE 360, ECE 355]"
-Mihai,Sima,msima@ece.uvic.ca,[SENG 440]
-Levi,Smith,levismith@uvic.ca,
-Poman,So,poman.so@uvic.ca,
-Ilamparithi,Thirumarai Chelvan,ilampari@uvic.ca,
-Issa,Traore,itraore@ece.uvic.ca,
-Hong-Chuan,Yang,hy@uvic.ca,
+Firstname,Lastname,Email,Credentials,Peng
+Celina,Berg,celinag@uvic.ca,"[CSC 111, SENG 310, SENG 435]",0
+Bill,Bird,bbird@uvic.ca,"[CSC 111, CSC 355, SENG 310, SENG 435, SENG 466]",0
+Sean,Chester,schester@uvic.ca,"[CSC 111, CSC 115, SENG 275, CSC 361, CSC 460]",0
+Jason,Corless,-,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, CSC 355, CSC 361, CSC 460]",0
+Daniela,Damian,danielad@uvic.ca,"[CSC 111, CSC 225, CSC 230, CSC 355, CSC 360, CSC 370, SENG 421]",0
+Neil,Ernst,nernst@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 230, CSC 355, CSC 360, SENG 310, SENG 401, SENG 411, SENG 421, SENG 435, SENG 466, SENG 474]",0
+Anthony,Estey,aestey@uvic.ca,"[CSC 115, CSC 226, SENG 275]",0
+Sudhakar,Ganti,sganti@uvic.ca,"[CSC 111, CSC 115, CSC 355]",0
+Daniel,German,dmg@uvic.ca,"[CSC 111, CSC 230, SENG 265, CSC 361, SENG 321, SENG 350, CSC 460, SENG 401, SENG 421]",0
+Brandon,Haworth,bhaworth@uvic.ca,"[CSC 111, CSC 115, CSC 226, CSC 355, CSC 360]",0
+Hosna,Jabbari,jabbari@uvic.ca,[CSC 111],0
+LillAnne,Jackson,engradu@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, SENG 371]",0
+Bruce,Kapron,bmkapron@uvic.ca,"[CSC 111, CSC 225, CSC 355, CSC 361, CSC 370]",0
+Valerie,King,val@uvic.ca,"[CSC 230, SENG 265, CSC 370, SENG 321, SENG 350, SENG 360, SENG 401, SENG 421]",0
+Sajin,Koroth,skoroth@uvic.ca,"[CSC 111, CSC 355, SENG 310, SENG 435, SENG 466]",0
+Rich,Little,rlittle@uvic.ca,"[SENG 265, SENG 310, CSC 460, SENG 421, SENG 435, SENG 466]",0
+Nishant,Mehta,nmehta@uvic.ca,"[CSC 115, CSC 226, SENG 275]",0
+Hausi,Muller,hausi@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, SENG 265, SENG 275, CSC 320, CSC 355, CSC 360]",0
+Miguel,Nacenta,nacenta@uvic.ca,"[CSC 230, SENG 310, SENG 321, SENG 421, SENG 435, SENG 466]",0
+Ibrahim,Numanagić,inumanag@uvic.ca,"[SENG 310, SENG 435, SENG 474, CSC 330]",0
+Jianping,Pan,pan@uvic.ca,"[CSC 226, SENG 371, SENG 421]",0
+Charles,Perin,cperin@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, SENG 275, CSC 355, CSC 370, SENG 421]",0
+Teseo,Schneider,teseo@uvic.ca,"[CSC 115, CSC 226, CSC 230, CSC 355, CSC 361, SENG 321, SENG 401, SENG 411]",0
+Sowmya,Somanath,sowmyasomanath@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 230, CSC 320, CSC 355, CSC 360, CSC 361, SENG 350]",0
+Venkatesh,Srinivasan,srinivas@uvic.ca,"[CSC 225, CSC 320, CSC 355, CSC 360, SENG 350]",0
+Ulrike,Stege,ustege@uvic.ca,[CSC 115],0
+Margaret-Anne,Storey,mstorey@uvic.ca,"[CSC 226, SENG 371, SENG 421]",0
+Cecilia,Summers,-,"[CSC 226, SENG 275, SENG 421]",0
+Alex,Thomo,thomo@uvic.ca,"[CSC 111, CSC 115, CSC 226, CSC 370, SENG 371]",0
+George,Tzanetakis,gtzan@cs.uvic.ca,"[CSC 115, CSC 355, CSC 370, SENG 371]",0
+Jens,Weber,jens@uvic.ca,"[CSC 230, SENG 321]",1
+Kui,Wu,wkui@uvic.ca,"[CSC 111, CSC 225, CSC 230, CSC 355, CSC 360, SENG 360, SENG 411, SENG 421]",0
+Michael,Zastre,zastre@uvic.ca,"[CSC 111, CSC 115, CSC 225, CSC 226, CSC 230, SENG 275, CSC 355, CSC 360, SENG 310]",0
+Michael,Adams,frodo@uvic.ca,"[ECE 260, SENG 475]",1
+Panajotis,Agathoklis,panagath@ece.uvic.ca,"[ECE 310, ECE 360]",1
+Riham,AlTawy,raltawy@uvic.ca,,1
+Amirali,Baniasadi,amiralib@uvic.ca,,1
+Jens,Bornemann,jbornema@ece.uvic.ca,,1
+Alexandra,Branzan Albu,aalbu@uvic.ca,,1
+Lin,Cai,cai@ece.uvic.ca,,1
+David,Capson,capson@uvic.ca,[ECE 355],1
+Thomas,Darcie,tdarcie@uvic.ca,,1
+Nikitas,Dimopoulos,nikitas@ece.uvic.ca,,1
+Xiaodai,Dong,xdong@ece.uvic.ca,,1
+Peter,Driessen,peter@ece.uvic.ca,,1
+Fayez,Gebali,-,[ECE 360],1
+Reuven,Gordon,rgordon@uvic.ca,,1
+Aaron,Gulliver,agullive@engr.uvic.ca,,1
+Kin Fun,Li,kinli@uvic.ca,,1
+Tao,Lu,taolu@ece.uvic.ca,,1
+Michael,McGuire,mmcguire@uvic.ca,"[ECE 310, ECE 360, ECE 485]",1
+Stephen,Neville,sneville@ece.uvic.ca,"[ECE 485, SENG 468, SENG 499]",1
+Christo,Papadopoulos,papdop@uvic.ca,,1
+Navneet,Popli,npopli@uvic.ca,"[SENG 499, SENG 468, ECE 458, SENG 275]",1
+Daler,Rakhmatov,daler@ece.uvic.ca,,1
+Makhsud,Saidaminov,msaidaminov@uvic.ca,,1
+Sana,Shuja,sanashuja@uvic.ca,"[ECE 310, ECE 360, ECE 355]",1
+Mihai,Sima,msima@ece.uvic.ca,[SENG 440],1
+Levi,Smith,levismith@uvic.ca,,1
+Poman,So,poman.so@uvic.ca,,1
+Ilamparithi,Thirumarai Chelvan,ilampari@uvic.ca,,1
+Issa,Traore,itraore@ece.uvic.ca,,1
+Hong-Chuan,Yang,hy@uvic.ca,,1

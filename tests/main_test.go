@@ -120,11 +120,6 @@ func handleUserRequests(router *mux.Router) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
 
-	// Users CRUD Operations
-	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
-		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
-	}).Methods(http.MethodPost)
-
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.GetUsers(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodGet)
@@ -136,10 +131,6 @@ func handleUserRequests(router *mux.Router) {
 	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
 		users.UpdateUser(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPut)
-
-	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
-		users.DeleteUser(w, r, client.Database("schedule_db").Collection("users"))
-	}).Methods(http.MethodDelete)
 }
 
 func handleClassroomRequests(router *mux.Router) {
