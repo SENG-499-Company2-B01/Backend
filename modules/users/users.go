@@ -15,73 +15,17 @@ import (
 
 // User represents a user entity
 type User struct {
-	Username       string            `json:"username" bson:"username"`
-	Email          string            `json:"email" bson:"email"`
-	Password       string            `json:"password" bson:"password"`
-	Firstname      string            `json:"firstname" bson:"firstname"`
-	LastName       string            `json:"lastname" bson:"lastname"`
-	IsAdmin        bool              `json:"-" bson:"isAdmin"`
-	Preferences    map[string]string `json:"preferences" bson:"preferences"`
-	Qualifications []string          `json:"qualifications" bson:"qualifications"`
-}
-
-// CreateUser handles the creation of a new user
-func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("CreateUser function called.")
-
-	// Parse request body into User struct
-	var newUser User
-	err := json.NewDecoder(r.Body).Decode(&newUser)
-	if err != nil {
-		// If there is an error decoding the request body,
-		// log the error and return a bad request response
-		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
-		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
-		return
-	}
-
-	// Check if username or email already exists in the collection
-	filter := bson.M{
-		"$or": []bson.M{
-			{"username": newUser.Username},
-			{"email": newUser.Email},
-		},
-	}
-	count, err := collection.CountDocuments(context.TODO(), filter, nil)
-	if err != nil {
-		// If there is an error querying the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error checking the collection: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error checking the collection.", http.StatusInternalServerError)
-		return
-	}
-	if count > 0 {
-		// If the count is greater than 0, indicating an existing user,
-		// return a conflict response
-		logger.Error(fmt.Errorf("username or email already exists"), http.StatusConflict)
-		http.Error(w, "Username or email already exists.", http.StatusConflict)
-		return
-	}
-
-	// by default IsAdmin is supposed to be set to false
-	newUser.IsAdmin = false
-
-	// Insert the user into the MongoDB collection
-	_, err = collection.InsertOne(context.TODO(), newUser)
-	if err != nil {
-		// If there is an error inserting the user into the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error inserting user: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error inserting user.", http.StatusInternalServerError)
-		return
-	}
-
-	// Send a response indicating successful user creation
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User created successfully")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("CreateUser function completed.")
+	Username      string                `json:"username" bson:"username"`
+	Email         string                `json:"email" bson:"email"`
+	Password      string                `json:"password" bson:"password"`
+	Firstname     string                `json:"firstname" bson:"firstname"`
+	LastName      string                `json:"lastname" bson:"lastname"`
+	IsAdmin       bool                  `json:"-" bson:"isAdmin"`
+	Peng          bool                  `json:"peng" bson:"peng"`
+	Pref_approved bool                  `json:"pref_approved" bson:"pref_approved"`
+	Max_courses   int                   `json:"max_courses" bson:"max_courses"`
+	Course_pref   []string              `json:"course_pref" bson:"course_pref"`
+	Unavailable   map[string][][]string `json:"unavailable" bson:"unavailable"`
 }
 
 // GetUsers retrieves all users from the MongoDB collection
@@ -234,52 +178,6 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 
 	// Uncomment the follow line for debugging
 	// logger.Info("UpdateUser function completed.")
-}
-
-// DeleteUser handles the deletion of a user
-func DeleteUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
-	logger.Info("DeleteUser function called.")
-
-	// Extract the user username from the URL path
-	path := r.URL.Path
-	username := strings.TrimPrefix(path, "/users/")
-	username = strings.TrimSpace(username)
-
-	// Check if the user exists in the collection
-	filter := bson.M{"username": username}
-	exists, err := userExists(filter, collection)
-	if err != nil {
-		// If there is an error querying the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error querying collection: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error querying collection.", http.StatusInternalServerError)
-		return
-	}
-	if !exists {
-		// If the user doesn't exist,
-		// return a not found response
-		logger.Error(fmt.Errorf("user not found"), http.StatusNotFound)
-		http.Error(w, "User not found.", http.StatusInternalServerError)
-		return
-	}
-
-	// Delete the user from the MongoDB collection
-	filter = bson.M{"username": username}
-	_, err = collection.DeleteOne(context.TODO(), filter)
-	if err != nil {
-		// If there is an error deleting the user from the collection,
-		// log the error and return an internal server error response
-		logger.Error(fmt.Errorf("Error deleting the user: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error deleting the user.", http.StatusInternalServerError)
-		return
-	}
-
-	// Send a response indicating successful user deletion
-	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User deleted successfully.")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("DeleteUser function completed.")
 }
 
 // userExists checks if a document exists in the collection based on a filter

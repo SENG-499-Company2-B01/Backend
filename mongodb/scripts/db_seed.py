@@ -2,7 +2,8 @@ import pandas as pd
 from pymongo import MongoClient 
 from dotenv import load_dotenv
 import os  
-import bcrypt
+import bcrypt 
+
 
 def check_if_not_empty(coll,coll_name):  
 
@@ -46,7 +47,8 @@ def load_users(coll):
 
 
     users_df = pd.read_csv("users.csv").fillna('')
-    users_df = users_df.astype({'Credentials':'string'})
+    users_df = users_df.astype({'Credentials':'string'}) 
+    pref_dict = {"M":[[]],"T":[[]],"W":[[]],"R":[[]],"F":[[]]}
 
     for index, row in users_df.iterrows():
 
@@ -60,15 +62,17 @@ def load_users(coll):
         if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
         else: 
-            user['isAdmin'] = False
+            user['isAdmin'] = False 
 
-        user['prefrences'] = []  
-
+        user['peng'] = (row['Peng'] == 1) 
+        user['pref_approved'] = False
+        user['max_courses'] = None
         # Convert qualifications string to array of strings 
       
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
         qualifications = string_qualifications.split(",")
-        user['qualifications'] = qualifications
+        user['course_pref'] = qualifications 
+        user['unavailable'] = pref_dict 
 
         coll.insert_one(user)
 
