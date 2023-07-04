@@ -14,11 +14,10 @@ import (
 )
 
 type Classroom struct {
-	Shorthand   string   `json:"shorthand"`
-	Building    string   `json:"building"`
-	Capacity    int      `json:"capacity"`
-	Room_number string   `json:"room_number"`
-	Equipment   []string `json:"equipment"`
+	Shorthand   string `json:"shorthand"`
+	Building    string `json:"building"`
+	Capacity    int    `json:"capacity"`
+	Room_number string `json:"room"`
 }
 
 // CreateClassroom handles the creation of a new classroom
