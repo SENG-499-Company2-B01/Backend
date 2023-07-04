@@ -132,6 +132,14 @@ func handleUserRequests(router *mux.Router) {
 
 	// Users CRUD Operations
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+
+	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.GetUsers(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodGet)
 

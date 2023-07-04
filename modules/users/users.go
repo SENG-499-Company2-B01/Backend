@@ -28,6 +28,64 @@ type User struct {
 	Unavailable   map[string][][]string `json:"unavailable" bson:"unavailable"`
 }
 
+func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+	logger.Info("CreateUser function called.")
+
+	// Parse request body into User struct
+	var newUser User
+	err := json.NewDecoder(r.Body).Decode(&newUser)
+	if err != nil {
+		// If there is an error decoding the request body,
+		// log the error and return a bad request response
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+		return
+	}
+
+	// Check if username or email already exists in the collection
+	filter := bson.M{
+		"$or": []bson.M{
+			{"username": newUser.Username},
+			{"email": newUser.Email},
+		},
+	}
+	count, err := collection.CountDocuments(context.TODO(), filter, nil)
+	if err != nil {
+		// If there is an error querying the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error checking the collection: "+err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Error checking the collection.", http.StatusInternalServerError)
+		return
+	}
+	if count > 0 {
+		// If the count is greater than 0, indicating an existing user,
+		// return a conflict response
+		logger.Error(fmt.Errorf("username or email already exists"), http.StatusConflict)
+		http.Error(w, "Username or email already exists.", http.StatusConflict)
+		return
+	}
+
+	// by default IsAdmin is supposed to be set to false
+	newUser.IsAdmin = false
+
+	// Insert the user into the MongoDB collection
+	_, err = collection.InsertOne(context.TODO(), newUser)
+	if err != nil {
+		// If there is an error inserting the user into the collection,
+		// log the error and return an internal server error response
+		logger.Error(fmt.Errorf("Error inserting user: "+err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Error inserting user.", http.StatusInternalServerError)
+		return
+	}
+
+	// Send a response indicating successful user creation
+	w.WriteHeader(http.StatusOK)
+	fmt.Fprintf(w, "User created successfully")
+
+	// Uncomment the follow line for debugging
+	// logger.Info("CreateUser function completed.")
+}
+
 // GetUsers retrieves all users from the MongoDB collection
 func GetUsers(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetUsers function called.")
