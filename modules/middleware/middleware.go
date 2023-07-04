@@ -60,8 +60,8 @@ func valid_permissions(r *http.Request, isAdmin bool, jwt_email string, collecti
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// ignore if this is not a call to users
-		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") {
+		// ignore if this is not a call to users, classrooms
+		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") && !strings.Contains(r.URL.Path, "/classrooms") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
@@ -124,6 +124,24 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 				logger.Error(fmt.Errorf("Forbidden - CRUD operation on courses  requested by "+jwtInfo.Email), http.StatusForbidden)
 				return
 			}
+		}
+
+		// Role based access for users endpoints
+		if strings.Contains(r.URL.Path, "/classrooms") {
+
+			// get forbidden for jwt
+			if r.Method == "GET" {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
+
+			// user must be admin for CRUD operation on classrooms
+			if (r.Method == "POST" || r.Method == "PUT" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
 
 		}
 
@@ -172,7 +190,6 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 
 			}
 		}
-
 		setupCORS(w, r)
 
 		// Middleware successful
