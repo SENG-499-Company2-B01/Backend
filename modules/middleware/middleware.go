@@ -60,8 +60,8 @@ func valid_permissions(r *http.Request, isAdmin bool, jwt_email string, collecti
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		// ignore if this is not a call to users, classrooms
-		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") && !strings.Contains(r.URL.Path, "/classrooms") {
+		// ignore if this is not a call to users or prev schedules, classrooms
+		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") && !strings.Contains(r.URL.Path, "/schedules/prev") && !strings.Contains(r.URL.Path, "/schedules") && !strings.Contains(r.URL.Path, "/classrooms") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
@@ -137,6 +137,31 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 
 		}
 
+		// Role based access for previous schedules endpoints
+		if r.URL.Path == "/schedules/prev" {
+			if !jwtInfo.IsAdmin {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - /schedules/prev CRUD operation requested by non admin - "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
+		}
+
+		// Role based access for schedules endpoints
+		if strings.Contains(r.URL.Path, "/schedules") && r.URL.Path != "/schedules/prev" {
+			// get forbidden for jwt
+			if r.Method == "GET" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// user must be admin for CRUD operation on schedules
+			if (r.Method == "POST" || r.Method == "PUT" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested for schedules by "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
+		}
+
 		// Role Based access for users endpoint
 		if strings.Contains(r.URL.Path, "/users") {
 			// user must be admin for CRUD operation on users
@@ -182,6 +207,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 
 			}
 		}
+
 		setupCORS(w, r)
 
 		// Middleware successful
