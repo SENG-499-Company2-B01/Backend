@@ -61,7 +61,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// ignore if this is not a call to users or prev schedules, classrooms
-		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/schedules/prev") && !strings.Contains(r.URL.Path, "/schedules") && !strings.Contains(r.URL.Path, "/classrooms") {
+		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") && !strings.Contains(r.URL.Path, "/schedules/prev") && !strings.Contains(r.URL.Path, "/schedules") && !strings.Contains(r.URL.Path, "/classrooms") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
@@ -100,6 +100,23 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 				logger.Error(fmt.Errorf("Error while verifying jwt "+err.Error()), http.StatusUnauthorized)
 			}
 			return
+		}
+
+		// Role based access for courses endpoints
+		if strings.Contains(r.URL.Path, "/courses") {
+
+			// Get is allowed with valid jwt
+			if r.Method == "GET" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			// CRUD for courses is only allowed for admins
+			if (r.Method == "POST" || r.Method == "PUT" || r.Method == "DELETE") && !jwtInfo.IsAdmin {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+				logger.Error(fmt.Errorf("Forbidden - CRUD operation on courses  requested by "+jwtInfo.Email), http.StatusForbidden)
+				return
+			}
 		}
 
 		// Role based access for users endpoints
@@ -145,7 +162,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			}
 		}
 
-		// Role based access for users endpoints
+		// Role Based access for users endpoint
 		if strings.Contains(r.URL.Path, "/users") {
 			// user must be admin for CRUD operation on users
 			if !valid_permissions(r, jwtInfo.IsAdmin, jwtInfo.Email, collection) {
