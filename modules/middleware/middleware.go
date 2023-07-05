@@ -105,15 +105,8 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 		// Role based access for courses endpoints
 		if strings.Contains(r.URL.Path, "/courses") {
 
-			// Get all courses is allowed with api key only
-			if r.Method == "GET" && r.URL.Path == "/courses" {
-				http.Error(w, "Forbidden", http.StatusForbidden)
-				logger.Error(fmt.Errorf("Forbidden - Get all on courses requested by "+jwtInfo.Email+" without api key"), http.StatusForbidden)
-				return
-			}
-
-			// Get for specific course is allowed with valid jwt
-			if r.Method == "GET" && strings.Contains(r.URL.Path, "/courses/") && ok {
+			// Get is allowed with valid jwt
+			if r.Method == "GET" {
 				next.ServeHTTP(w, r)
 				return
 			}
@@ -131,8 +124,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 
 			// get forbidden for jwt
 			if r.Method == "GET" {
-				http.Error(w, "Forbidden", http.StatusForbidden)
-				logger.Error(fmt.Errorf("Forbidden - CRUD operation requested by "+jwtInfo.Email), http.StatusForbidden)
+				next.ServeHTTP(w, r)
 				return
 			}
 
