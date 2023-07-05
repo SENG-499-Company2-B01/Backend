@@ -48,7 +48,7 @@ def load_users(coll):
 
     users_df = pd.read_csv("users.csv").fillna('')
     users_df = users_df.astype({'Credentials':'string'}) 
-    pref_dict = {"M":[[]],"T":[[]],"W":[[]],"R":[[]],"F":[[]]}
+    pref_dict = {"M":[["08:30","16:00"]],"T":[["08:30","16:00"]],"W":[["08:30","16:00"]],"R":[["08:30","16:00"]],"F":[["08:30","16:00"]]}
 
     for index, row in users_df.iterrows():
 
@@ -72,7 +72,7 @@ def load_users(coll):
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
         qualifications = string_qualifications.split(",")
         user['course_pref'] = qualifications 
-        user['unavailable'] = pref_dict 
+        user['available'] = pref_dict 
 
         coll.insert_one(user)
 

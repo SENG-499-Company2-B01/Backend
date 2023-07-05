@@ -25,7 +25,7 @@ type User struct {
 	Pref_approved bool                  `json:"pref_approved" bson:"pref_approved"`
 	Max_courses   int                   `json:"max_courses" bson:"max_courses"`
 	Course_pref   []string              `json:"course_pref" bson:"course_pref"`
-	Unavailable   map[string][][]string `json:"unavailable" bson:"unavailable"`
+	Available     map[string][][]string `json:"available" bson:"available"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
