@@ -20,7 +20,7 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Year  string `json:"year"`
+	Year  int    `json:"year"`
 	Terms []Term `json:"terms"`
 }
 
@@ -122,10 +122,9 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 
 	algs2RequestBody, _ := json.Marshal(new_algs2_request)
 	algs2Payload := []byte(algs2RequestBody)
-	algs2Req, _ := http.NewRequest(http.MethodPost, algs2_api, bytes.NewBuffer(algs2Payload))
+	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))
 
-	//logger.Info(algs2Req.Response.Status)
-	fmt.Println(algs2Req)
+	fmt.Println(algs2Req.Body)
 	//var capacity map[string]int
 
 	// Hard coded until Algs 2 is working properly
@@ -205,23 +204,19 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 
 	algs1RequestBody, _ := json.Marshal(new_algs1_request)
 	algs1Payload := []byte(algs1RequestBody)
-	algs1Req, _ := http.NewRequest(http.MethodPost, algs1_api, bytes.NewBuffer(algs1Payload))
+	algs1Req, _ := http.Post(algs1_api, "application/json", bytes.NewBuffer(algs1Payload))
 
-	// var new_schedule Schedule
-	// final_err := json.NewDecoder(algs1Req.Body).Decode(&new_schedule)
+	var new_schedule Schedule
+	final_err := json.NewDecoder(algs1Req.Body).Decode(&new_schedule)
 
-	// if final_err != nil {
-	// 	logger.Error(fmt.Errorf("Error parsing generated schedule: "+final_err.Error()), http.StatusInternalServerError)
-	// 	http.Error(w, "Error parsing generated schedule.", http.StatusInternalServerError)
-	// 	return
-	// }
-	// TODO: finish this function
-
-	// var new_sched interface{}
-	defer algs1Req.Body.Close()
-	fmt.Println(algs1Req)
+	if final_err != nil {
+		logger.Error(fmt.Errorf("Error parsing generated schedule: "+final_err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Error parsing generated schedule.", http.StatusInternalServerError)
+		return
+	}
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(new_schedule)
 	fmt.Fprintf(w, "New Scheduled generated successfully")
 
 	// Uncomment the follow line for debugging
