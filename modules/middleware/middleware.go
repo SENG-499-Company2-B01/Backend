@@ -13,10 +13,10 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func setupCORS(w http.ResponseWriter, r *http.Request) {
-	w.Header().Set("Access-Control-Allow-Origin", "*")
-	w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")
-	w.Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding")
+func setupCORS(w *http.ResponseWriter, r *http.Request) {
+	(*w).Header().Set("Access-Control-Allow-Origin", "*")
+	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")
+	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding")
 }
 
 func fetch_email(path string, collection *mongo.Collection) string {
@@ -59,6 +59,8 @@ func valid_permissions(r *http.Request, isAdmin bool, jwt_email string, collecti
 // Middleware function, which will be called for each request
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		setupCORS(&w, r)
 
 		// ignore if this is not a call to users, classrooms
 		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/classrooms") {
@@ -168,8 +170,6 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 			}
 
 		}
-		setupCORS(w, r)
-
 		// Middleware successful
 		next.ServeHTTP(w, r)
 	})
