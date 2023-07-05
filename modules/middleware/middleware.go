@@ -61,7 +61,7 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
 		// ignore if this is not a call to users or prev schedules
-		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/schedules/prev") {
+		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/schedules/prev") && strings.Contains(r.URL.Path, "/schedules") {
 			// Middleware successful
 			next.ServeHTTP(w, r)
 			return
