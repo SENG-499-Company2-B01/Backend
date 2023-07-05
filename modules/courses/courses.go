@@ -17,8 +17,9 @@ import (
 type Course struct {
 	ShortHand     string     `json:"shorthand" bson:"shorthand"`
 	Name          string     `json:"name" bson:"name"`
-	Equipements   []string   `json:"equipment" bson:"equipements"`
 	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
+	CoRequisites  []string   `json:"corequisites" bson:"corequisites"`
+	TermsOffered  []string   `json:"terms_offered" bson:"terms_offered"`
 }
 
 // CreateCourse - creates a new course in the course DB

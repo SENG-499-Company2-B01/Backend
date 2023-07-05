@@ -201,15 +201,6 @@ func handleCourseRequests(router *mux.Router) {
 }
 
 func handleScheduleRequests(router *mux.Router) {
-	// Schedules Read Operation
-	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
-	}).Methods(http.MethodGet)
-
-	// Schedules Generation Endpoints
-	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
-	}).Methods(http.MethodPost)
 
 	// Previous Schedule Operations
 	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
@@ -218,6 +209,16 @@ func handleScheduleRequests(router *mux.Router) {
 
 	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
 		schedules.ApproveSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"), client.Database("schedule_db").Collection("previous_schedules"))
+	}).Methods(http.MethodPost)
+
+	// Schedules Read Operation
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodGet)
+
+	// Schedules Generation Endpoints
+	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodPost)
 }
 
