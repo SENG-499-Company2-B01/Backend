@@ -62,6 +62,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode("New Scheduled generated successfully")
 	fmt.Fprintf(w, "New Scheduled generated successfully")
 
 	// Uncomment the follow line for debugging

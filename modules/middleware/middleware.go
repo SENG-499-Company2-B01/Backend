@@ -59,8 +59,6 @@ func valid_permissions(r *http.Request, isAdmin bool, jwt_email string, collecti
 // Middleware function, which will be called for each request
 func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		logger.Info("setup cors called")
-		setupCORS(&w, r)
 		// ignore if this is not a call to users or prev schedules, classrooms
 		if !strings.Contains(r.URL.Path, "/users") && !strings.Contains(r.URL.Path, "/courses") && !strings.Contains(r.URL.Path, "/schedules/prev") && !strings.Contains(r.URL.Path, "/schedules") && !strings.Contains(r.URL.Path, "/classrooms") {
 			// Middleware successful

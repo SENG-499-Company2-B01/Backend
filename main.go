@@ -123,11 +123,6 @@ func handleUserRequests(router *mux.Router) {
 		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
 	})
 
-	// Schedules Generation Endpoints
-	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
-	}).Methods(http.MethodPost)
-
 	// AUTHENTICATION
 	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
@@ -222,10 +217,10 @@ func handleScheduleRequests(router *mux.Router) {
 		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
-	// // Schedules Generation Endpoints
-	// router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
-	// 	schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
-	// }).Methods(http.MethodPost)
+	// Schedules Generation Endpoints
+	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodPost)
 }
 
 func main() {
