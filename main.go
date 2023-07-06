@@ -12,10 +12,12 @@ import (
 	"github.com/SENG-499-Company2-B01/Backend/logger"
 	"github.com/SENG-499-Company2-B01/Backend/modules/classrooms"
 	"github.com/SENG-499-Company2-B01/Backend/modules/courses"
+	"github.com/SENG-499-Company2-B01/Backend/modules/health"
+	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
-	"github.com/SENG-499-Company2-B01/Backend/modules/middleware"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -23,6 +25,8 @@ import (
 )
 
 var client *mongo.Client
+var algs1_api string
+var algs2_api string
 
 func init() {
 	// Get the current working directory
@@ -63,45 +67,81 @@ func init() {
 		log.Fatal("Error loading .env file:", err)
 	}
 
-	// Load the environment variables locally
-	mongoUsername := os.Getenv("MONGO_USERNAME")
-	mongoPassword := os.Getenv("MONGO_PASSWORD")
-	mongoAddress := os.Getenv("MONGO_ADDRESS")
-	mongoPort := os.Getenv("MONGO_PORT")
+	algs1_api = os.Getenv("ALGS1_API")
+	algs2_api = os.Getenv("ALGS2_API")
 
-	// Set up the MongoDB client with SCRAM-SHA-1 authentication
-	clientOptions := options.Client().ApplyURI("mongodb://" + mongoAddress + ":" + mongoPort).
-		SetAuth(options.Credential{
-			Username:      mongoUsername,
-			Password:      mongoPassword,
-			AuthMechanism: "SCRAM-SHA-256",
-		})
+	if os.Getenv("ENVIRONMENT") == "development" {
+		// Load the environment variables locally
+		mongohost := os.Getenv("MONGO_LOCAL_HOST")
+		mongoUsername := os.Getenv("MONGO_LOCAL_USERNAME")
+		mongoPassword := os.Getenv("MONGO_LOCAL_PASSWORD")
 
-	client, err = mongo.Connect(context.TODO(), clientOptions)
-	if err != nil {
-		log.Fatal(err)
-	}
+		// Set up the MongoDB client with SCRAM-SHA-1 authentication
+		clientOptions := options.Client().ApplyURI("mongodb://" + mongohost).
+			SetAuth(options.Credential{
+				Username:      mongoUsername,
+				Password:      mongoPassword,
+				AuthMechanism: "SCRAM-SHA-256",
+			})
 
-	// Check the connection
-	err = client.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Fatal(err)
+		client, err = mongo.Connect(context.TODO(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Check the connection
+		err = client.Ping(context.TODO(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+	} else if os.Getenv("ENVIRONMENT") == "production" {
+		// Load the environment variables locally
+		mongoUsername := os.Getenv("MONGO_PRODUCTION_USERNAME")
+		mongoPassword := os.Getenv("MONGO_PRODUCTION_PASSWORD")
+		mongoHost := os.Getenv("MONGO_PRODUCTION_HOST")
+
+		// Use the MongoDB Atlas connection string
+		connectionString := fmt.Sprintf("mongodb+srv://%s:%s@%s/?retryWrites=true&w=majority", mongoUsername, mongoPassword, mongoHost)
+
+		// Set up client options
+		clientOptions := options.Client().ApplyURI(connectionString)
+
+		// Connect to MongoDB
+		client, err = mongo.Connect(context.Background(), clientOptions)
+		if err != nil {
+			log.Fatal(err)
+		}
+
+		// Ping the MongoDB server to check the connection
+		err = client.Ping(context.Background(), nil)
+		if err != nil {
+			log.Fatal(err)
+		}
 	}
 
 	logger.Info("Connected to MongoDB successfully!")
 }
 
 func handleUserRequests(router *mux.Router) {
-	// router.Use(middleware.Users_API_Access_Control)
 	router.Use(func(next http.Handler) http.Handler {
 		return middleware.Users_API_Access_Control(next, client.Database("schedule_db").Collection("users"))
 	})
+
 	// AUTHENTICATION
-	router.HandleFunc("/signin", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		users.SignIn(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
 
+	router.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		users.Logout(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+
 	// Users CRUD Operations
+	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
+	}).Methods(http.MethodPost)
+
 	router.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		users.CreateUser(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPost)
@@ -118,9 +158,6 @@ func handleUserRequests(router *mux.Router) {
 		users.UpdateUser(w, r, client.Database("schedule_db").Collection("users"))
 	}).Methods(http.MethodPut)
 
-	router.HandleFunc("/users/{username}", func(w http.ResponseWriter, r *http.Request) {
-		users.DeleteUser(w, r, client.Database("schedule_db").Collection("users"))
-	}).Methods(http.MethodDelete)
 }
 
 func handleClassroomRequests(router *mux.Router) {
@@ -170,31 +207,26 @@ func handleCourseRequests(router *mux.Router) {
 }
 
 func handleScheduleRequests(router *mux.Router) {
-	// Schedules CRUD Operations
-	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.CreateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+
+	// Previous Schedule Operations
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("previous_schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
+		schedules.ApproveSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"), client.Database("schedule_db").Collection("previous_schedules"))
 	}).Methods(http.MethodPost)
 
+	// Schedules Read Operation
 	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("schedules"))
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodGet)
-
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodPut)
-
-	router.HandleFunc("/schedules/{schedule}", func(w http.ResponseWriter, r *http.Request) {
-		schedules.DeleteSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
-	}).Methods(http.MethodDelete)
-
-	// Run Schedule Generation
-	// NOTE: Still needs to implemented after algo team sets up REST APIs
-	router.HandleFunc("/generate_schedule", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("schedules"))
+	// Schedules Generation Endpoints
+	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"),
+			client.Database("schedule_db").Collection("users"), client.Database("schedule_db").Collection("courses"),
+			client.Database("schedule_db").Collection("classrooms"), algs1_api, algs2_api)
 	}).Methods(http.MethodPost)
 }
 
@@ -203,14 +235,22 @@ func main() {
 	// logger.Info("This is an info message")
 	// logger.Warning("This is a warning message")
 	// logger.Error(fmt.Errorf("This is an error message"))
-	
+
 	router := mux.NewRouter()
+	headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)
 	handleScheduleRequests(router)
 
-	log.Fatal(http.ListenAndServe(":8000", router))
+	// This route will be used by the cloud server to test its health, it only ever returns 200 OK
+	router.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
+		health.CheckHealth(w, r)
+	}).Methods(http.MethodGet)
+
+	log.Fatal(http.ListenAndServe(":8000", handlers.CORS(originsOk, headersOk, methodsOk)(router)))
 }
 
 // // Example handle request

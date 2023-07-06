@@ -14,7 +14,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 
 	"github.com/SENG-499-Company2-B01/Backend/logger"
+	"golang.org/x/crypto/bcrypt"
 )
+
+func verify_pw(hash, pw string) bool {
+
+	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(pw))
+	return err == nil
+}
 
 // SignIn: Does Sign In process, and returns jwt token and user role
 func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
@@ -30,11 +37,11 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	var user User
 	// Retrieve the user credentials from the MongoDB collection
-	filter := bson.M{"email": signInReq.Email}
+	filter := bson.M{"username": signInReq.Username}
 	err = collection.FindOne(context.TODO(), filter).Decode(&user)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			logger.Error(fmt.Errorf("username or password incorrect"))
+			logger.Error(fmt.Errorf("username or password incorrect"), http.StatusNotFound)
 			http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 			return
 		}
@@ -42,8 +49,9 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 		return
 	}
 
-	if signInReq.Email != user.Email || signInReq.Password != user.Password {
-		logger.Error(fmt.Errorf("username or Password Incorrect"))
+	pw_correct := verify_pw(user.Password, signInReq.Password)
+	if signInReq.Username != user.Username || !pw_correct {
+		logger.Error(fmt.Errorf("username or Password Incorrect"), http.StatusNotFound)
 		http.Error(w, "Username or password incorrect.", http.StatusNotFound)
 		return
 	}
@@ -68,4 +76,10 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	// Uncomment the follow line for debugging
 	// logger.Info("Signin function completed.")
+}
+
+// Empty function to match partern company specs. Client will need to delete JWT.
+func Logout(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte("Delete your token."))
 }

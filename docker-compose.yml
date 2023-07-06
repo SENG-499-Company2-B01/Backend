@@ -4,11 +4,10 @@ services:
   mongo_db:
     build: ./mongodb 
     environment:
-      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
-      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_LOCAL_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_LOCAL_PASSWORD}
       MONGO_INITDB_DATABASE: schedule_db
-      MONGO_ADDRESS: ${MONGO_ADDRESS}
-      MONGO_PORT: ${MONGO_PORT}
+      MONGO_LOCAL_HOST: ${MONGO_LOCAL_HOST}
     ports:
       - "27017:27017"
     volumes:
@@ -30,14 +29,13 @@ services:
         ipv4_address: 10.9.0.2 
 
   db_init_container: 
-    build: ./mongodb/scripts  
+    build: ./mongodb/scripts
     depends_on:
       - mongo_db
     environment: 
-      MONGO_ADDRESS: ${MONGO_ADDRESS} 
-      MONGO_PORT: ${MONGO_PORT} 
-      MONGO_USERNAME: ${MONGO_USERNAME} 
-      MONGO_PASSWORD: ${MONGO_PASSWORD} 
+      MONGO_LOCAL_HOST: ${MONGO_LOCAL_HOST}
+      MONGO_LOCAL_USERNAME: ${MONGO_LOCAL_USERNAME}
+      MONGO_LOCAL_PASSWORD: ${MONGO_LOCAL_PASSWORD}
     ports: 
       - "9000:9000" 
     networks:

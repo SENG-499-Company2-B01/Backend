@@ -1,44 +1,44 @@
-Course,Name,Offered,Units
-CSC 111,Fundamentals of Programming with Engineering Applications,"[F, Sp]",1.5
-ENGR 110,Design and Communication I,[F],2.5
-ENGR 130,Introduction to Professional Practice,"[F, Sp]",0.5
-MATH 100,Calculus I,"[F, Sp, Su]",1.5
-MATH 109,Introduction to Calculus,"[F, Sp, Su]",1.5
-MATH 110,Matrix Algebra for Engineers,[F],1.5
-PHYS 110,Introductory Physics I,"[F, Sp]",1.5
-CSC 115,Fundamentals of Programming II,"[F, Sp, Su]",1.5
-ENGR 120,Design and Communication II,[Sp],2.5
-ENGR 141,Engineering Mechanics,"[Sp, Su]",1.5
-MATH 101,Calculus II,"[F, Sp, Su]",1.5
-PHYS 111,Introductory Physics II,"[Sp, Su]",1.5
-ECE 255,Introduction to Computer Architecture,[F],1.5
-CSC 230,Introduction to Computer Architecture,"[F, Sp, Su]",1.5
-CHEM 101,Fundamentals of Chemistry from Atoms to Materials,"[F, Su]",1.5
-ECE 260,Continuous-Time Signals and Systems,"[F, Su]",1.5
-MATH 122,Logic and Foundations,"[F, Sp, Su]",1.5
-SENG 265,Software Development Methods,"[F, Sp, Su]",1.5
-STAT 260,Introduction to Probability and Statistics I,"[F, Sp, Su]",1.5
-CSC 225,Algorithms and Data Structures I,"[F. Sp, Su]",1.5
-ECE 310,Digital Signal Processing I,"[Sp, Su]",1.5
-ECON 180 ,Introduction to Economics and Financial Project Evaluation,"[F, Sp, Su]",1.5
-SENG 275,Software Testing,"[Sp, Su]",1.5
-SENG 310,Human Computer Interaction,"[F, Sp, Su]",1.5
-ECE 363,Communication Networks,[Sp],1.5
-CSC 361,Computer Communications and Networks,"[F, Sp]",1.5
-CSC 226,Algorithms and Data Structures II,"[F, Sp, Su]",1.5
-ECE 360,Control Theory and Systems I,"[F, Sp]",1.5
-SENG 321,Requirements Engineering,"[F, Sp]",1.5
-SENG 371,Software Evolution,[Sp],1.5
-ECE 355,Microprocessor-Based Systems,[F],1.5
-CSC 355,Digital Logic and Computer Organization,[F],1.5
-CSC 320,Foundations of Computer Science,"[F, Sp, Su]",1.5
-CSC 360,Operating Systems,"[F, Sp, Su]",1.5
-CSC 370,Database Systems,"[F, Sp, Su]",1.5
-SENG 350,Software Architecture and Design,[F],1.5
-SENG 360,Security Engineering,[F],1.5
-SENG 426,Software Quality Engineering,[Su],1.5
-SENG 440,Embedded Systems,[Su],1.5
-SENG 499,Design Project II,[Su],1.5
-ECE 455,Real Time Computer Systems Design Project,[Sp],1.5
-CSC 460,Design and Analysis of Real-Time Systems,[Sp],1.5
-SENG 401,Social and Professional Issues,[Sp],1.5
+Course,Name,Offered,Units,Prerequisites
+CSC 111,Fundamentals of Programming with Engineering Applications,"[F, Sp]",1.5,"[]"
+ENGR 110,Design and Communication I,[F],2.5,"[]"
+ENGR 130,Introduction to Professional Practice,"[F, Sp]",0.5,"[]"
+MATH 100,Calculus I,"[F, Sp, Su]",1.5, "[]"
+MATH 109,Introduction to Calculus,"[F, Sp, Su]",1.5,"[]"
+MATH 110,Matrix Algebra for Engineers,[F],1.5,"[]"
+PHYS 110,Introductory Physics I,"[F, Sp]",1.5,"[]"
+CSC 115,Fundamentals of Programming II,"[F, Sp, Su]",1.5,"[[CSC110],[CSC111]]"
+ENGR 120,Design and Communication II,[Sp],2.5,"[[ENGR110:CSC111]]"
+ENGR 141,Engineering Mechanics,"[Sp, Su]",1.5 ,"[[MATH100:MATH110]]"
+MATH 101,Calculus II,"[F, Sp, Su]",1.5,"[[MATH100]]"
+PHYS 111,Introductory Physics II,"[Sp, Su]",1.5 ,"[[PHYS110]]"
+ECE 255,Introduction to Computer Architecture,[F],1.5 ,"[[CSC111]]"
+CSC 230,Introduction to Computer Architecture,"[F, Sp, Su]",1.5,"[[CSC115],[CSC116]]"
+CHEM 101,Fundamentals of Chemistry from Atoms to Materials,"[F, Su]",1.5,"[]"
+ECE 260,Continuous-Time Signals and Systems,"[F, Su]",1.5 ,"[[MATH101:MATH110]]"
+MATH 122,Logic and Foundations,"[F, Sp, Su]",1.5,"[[MATH100]]"
+SENG 265,Software Development Methods,"[F, Sp, Su]",1.5,"[[CSC115],[CSC116]]"
+STAT 260,Introduction to Probability and Statistics I,"[F, Sp, Su]",1.5,"[[MATH101]]"
+CSC 225,Algorithms and Data Structures I,"[F. Sp, Su]",1.5,"[[CSC115:MATH122],[CSC116:MATH122]]"
+ECE 310,Digital Signal Processing I,"[Sp, Su]",1.5,"[[ECE260]]"
+ECON 180 ,Introduction to Economics and Financial Project Evaluation,"[F, Sp, Su]",1.5,"[[MATH101]]"
+SENG 275,Software Testing,"[Sp, Su]",1.5,"[[SENG265]]"
+SENG 310,Human Computer Interaction,"[F, Sp, Su]",1.5,"[[SENG265]]"
+ECE 363,Communication Networks,[Sp],1.5,"[[ECE255],[CSC230]]"
+CSC 361,Computer Communications and Networks,"[F, Sp]",1.5 ,"[[SENG265:CSC230],[SENG265:ECE255]]"
+CSC 226,Algorithms and Data Structures II,"[F, Sp, Su]",1.5 ,"[[CSC225]]"
+ECE 360,Control Theory and Systems I,"[F, Sp]",1.5 ,"[[ECE260]]"
+SENG 321,Requirements Engineering,"[F, Sp]",1.5,"[[SENG265]]"
+SENG 371,Software Evolution,[Sp],1.5,"[[SENG275],[SENG321]]"
+ECE 355,Microprocessor-Based Systems,[F],1.5,"[[MATH122:ECE255],[MATH122:CSC230]]"
+CSC 355,Digital Logic and Computer Organization,[F],1.5,"[[MATH122:ECE255],[MATH122:CSC230]]"
+CSC 320,Foundations of Computer Science,"[F, Sp, Su]",1.5,"[[CSC226]]"
+CSC 360,Operating Systems,"[F, Sp, Su]",1.5,"[[CSC225:SENG265:CSC230],[CSC225:SENG265:ECE255]]"
+CSC 370,Database Systems,"[F, Sp, Su]",1.5,"[[CSC255:SENG265]]"
+SENG 350,Software Architecture and Design,[F],1.5,"[[SENG275]]"
+SENG 360,Security Engineering,[F],1.5,"[[SENG265:ECE363],[SENG265:CSC361]]"
+SENG 426,Software Quality Engineering,[Su],1.5,"[[SENG275:SENG321],[SENG275:SENG371]]"
+SENG 440,Embedded Systems,[Su],1.5,"[[ECE355],[CSC355]]"
+SENG 499,Design Project II,[Su],1.5,"[[SENG350:CSC361:CSC370:SENG321],[SENG350:ECE363:CSC370:SENG321]]"
+ECE 455,Real Time Computer Systems Design Project,[Sp],1.5,"[[CSC355],[ECE355]]"
+CSC 460,Design and Analysis of Real-Time Systems,[Sp],1.5,"[[CSC360:CSC355],[CSC360:ECE355]]"
+SENG 401,Social and Professional Issues,[Sp],1.5,"[]"
