@@ -217,7 +217,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(new_schedule)
-	fmt.Fprintf(w, "New Scheduled generated successfully")
+	// fmt.Fprintf(w, "New Scheduled generated successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("GenerateSchedule function completed.")
@@ -254,7 +254,7 @@ func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *m
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Schedule has been approved")
+	// fmt.Fprintf(w, "Schedule has been approved")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("ApproveSchedule function completed.")
