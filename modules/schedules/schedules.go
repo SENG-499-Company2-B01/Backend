@@ -56,7 +56,16 @@ type Algs1_Request struct {
 	Users      []users.User           `json:"users"`
 	Courses    []courses.Course       `json:"courses"`
 	Classrooms []classrooms.Classroom `json:"classrooms"`
-	Capacity   map[string]int         `json:"capacity"`
+	Capacity   Capacity               `json:"capacity"`
+}
+
+type Estimate struct {
+	Course   string `json:"course"`
+	Estimate int    `json:"estimate"`
+}
+
+type Capacity struct {
+	Estimates []Estimate `json:"estimates"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -124,16 +133,41 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	algs2Payload := []byte(algs2RequestBody)
 	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))
 
-	fmt.Println(algs2Req.Body)
-	//var capacity map[string]int
+	// Check the response status code and populate the capacity array
+	var capacity Capacity
+	if algs2Req.StatusCode == http.StatusOK { // Response status is 200 (OK)
+		// Parse the response body into the capacity variable
+		decoder := json.NewDecoder(algs2Req.Body)
+		err := decoder.Decode(&capacity)
 
-	// Hard coded until Algs 2 is working properly
-	capacity := make(map[string]int)
-	capacity["CSC110"] = 100
-	capacity["MATH100"] = 99
-	capacity["CSC320"] = 82
-	capacity["CSC360"] = 100
-	//err1 := json.NewDecoder(req.Body).Decode(&capacity)
+		if err != nil {
+			// Handle error in parsing response body
+			logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
+			http.Error(w, "Error trying to parse response body.", http.StatusInternalServerError)
+
+			// Construct an empty capacity array
+			capacity = Capacity{}
+		}
+	} else { // Response status is not 200 (OK)
+		// Construct an empty capacity array
+		capacity = Capacity{}
+	}
+
+	// Debugging
+	// // Print the algs2RequestBody variable
+	// fmt.Println("algs2RequestBody:", string(algs2RequestBody))
+
+	// // Print the algs2Payload variable
+	// fmt.Println("algs2Payload:", string(algs2Payload))
+
+	// // Print the algs2Req variable
+	// fmt.Println("algs2Req:", algs2Req)
+
+	// // Print the algs2Req variable
+	// fmt.Println("algs2Req.StatusCode:", algs2Req.StatusCode)
+
+	// // Print the capacity variable
+	// fmt.Println("capacity:", capacity)
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
