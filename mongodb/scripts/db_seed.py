@@ -91,8 +91,7 @@ def load_courses(coll):
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
-        course['offered'] = row['Offered'] 
-        course['equipment'] = [] 
+        course['terms_offered'] = row['Offered'].replace("[","").replace("]","").split(",")
         course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 

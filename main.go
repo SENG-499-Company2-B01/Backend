@@ -24,6 +24,8 @@ import (
 )
 
 var client *mongo.Client
+var algs1_api string
+var algs2_api string
 
 func init() {
 	// Get the current working directory
@@ -63,6 +65,9 @@ func init() {
 	if err != nil {
 		log.Fatal("Error loading .env file:", err)
 	}
+
+	algs1_api = os.Getenv("ALGS1_API")
+	algs2_api = os.Getenv("ALGS2_API")
 
 	if os.Getenv("ENVIRONMENT") == "development" {
 		// Load the environment variables locally
@@ -218,7 +223,9 @@ func handleScheduleRequests(router *mux.Router) {
 
 	// Schedules Generation Endpoints
 	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"),
+			client.Database("schedule_db").Collection("users"), client.Database("schedule_db").Collection("courses"),
+			client.Database("schedule_db").Collection("classrooms"), algs1_api, algs2_api)
 	}).Methods(http.MethodPost)
 }
 
