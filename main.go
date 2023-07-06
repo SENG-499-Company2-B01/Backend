@@ -17,6 +17,7 @@ import (
 	"github.com/SENG-499-Company2-B01/Backend/modules/schedules"
 	"github.com/SENG-499-Company2-B01/Backend/modules/users"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -236,6 +237,9 @@ func main() {
 	// logger.Error(fmt.Errorf("This is an error message"))
 
 	router := mux.NewRouter()
+	headersOk := handlers.AllowedHeaders([]string{"Accept", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization"})
+	originsOk := handlers.AllowedOrigins([]string{"*"})
+	methodsOk := handlers.AllowedMethods([]string{"GET", "HEAD", "POST", "PUT", "OPTIONS"})
 	handleUserRequests(router)
 	handleClassroomRequests(router)
 	handleCourseRequests(router)
@@ -246,7 +250,7 @@ func main() {
 		health.CheckHealth(w, r)
 	}).Methods(http.MethodGet)
 
-	log.Fatal(http.ListenAndServe(":8000", router))
+	log.Fatal(http.ListenAndServe(":8000", handlers.CORS(originsOk, headersOk, methodsOk)(router)))
 }
 
 // // Example handle request
