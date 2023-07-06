@@ -13,12 +13,6 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func setupCORS(w *http.ResponseWriter, r *http.Request) {
-	(*w).Header().Set("Access-Control-Allow-Origin", "*")
-	(*w).Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS, PUT")
-	(*w).Header().Set("Access-Control-Allow-Headers", "Accept, Content-Type, Content-Length, Accept-Encoding, Authorization")
-}
-
 func fetch_email(path string, collection *mongo.Collection) string {
 
 	username := strings.TrimPrefix(path, "/users/")
