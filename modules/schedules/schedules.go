@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,7 +19,7 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Year  int    `json:"year"`
+	Year  string `json:"year"`
 	Terms []Term `json:"terms"`
 }
 
@@ -45,13 +44,13 @@ type Class struct {
 }
 
 type Algs2_Request struct {
-	Year    int              `json:"year"`
+	Year    string           `json:"year"`
 	Term    string           `json:"term"`
 	Courses []courses.Course `json:"courses"`
 }
 
 type Algs1_Request struct {
-	Year       int                    `json:"year"`
+	Year       string                 `json:"year"`
 	Term       string                 `json:"term"`
 	Users      []users.User           `json:"users"`
 	Courses    []courses.Course       `json:"courses"`
@@ -65,7 +64,7 @@ type Estimate struct {
 }
 
 type Capacity struct {
-	Estimates []Estimate `json:"estimates"`
+	Estimates map[string]Estimate `json:"estimates"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -84,7 +83,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	}
 
 	// Extract the year and term from path
-	year, _ := strconv.Atoi(path[2])
+	year := path[2]
 	term := path[3]
 
 	// Check if passed term is valid
@@ -95,6 +94,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	}
 
 	var courses_list []courses.Course
+
 	// Retrieve all documents from the MongoDB collection
 	cursor1, err := courses_coll.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -154,20 +154,15 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	}
 
 	// Debugging
-	// // Print the algs2RequestBody variable
-	// fmt.Println("algs2RequestBody:", string(algs2RequestBody))
 
-	// // Print the algs2Payload variable
-	// fmt.Println("algs2Payload:", string(algs2Payload))
+	// Print the algs2Payload variable
+	fmt.Println("algs2Payload:", string(algs2Payload))
 
-	// // Print the algs2Req variable
-	// fmt.Println("algs2Req:", algs2Req)
+	// Print the algs2Req variable
+	fmt.Println("algs2Req:", algs2Req)
 
-	// // Print the algs2Req variable
-	// fmt.Println("algs2Req.StatusCode:", algs2Req.StatusCode)
-
-	// // Print the capacity variable
-	// fmt.Println("capacity:", capacity)
+	// Print the capacity variable
+	fmt.Println("capacity:", capacity)
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
