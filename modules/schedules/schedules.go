@@ -56,7 +56,7 @@ type Algs1_Request struct {
 	Users      []users.User           `json:"users"`
 	Courses    []courses.Course       `json:"courses"`
 	Classrooms []classrooms.Classroom `json:"classrooms"`
-	Capacity   Capacity               `json:"capacity"`
+	Capacity   []Capacity             `json:"capacity"`
 }
 
 type Estimate struct {
@@ -65,7 +65,7 @@ type Estimate struct {
 }
 
 type Capacity struct {
-	Estimates map[string]Estimate `json:"estimates"`
+	Estimate []Estimate `json:"estimates"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -135,7 +135,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))
 
 	// Check the response status code and populate the capacity array
-	var capacity Capacity
+	var capacity []Capacity
 	if algs2Req.StatusCode == http.StatusOK { // Response status is 200 (OK)
 		// Parse the response body into the capacity variable
 		decoder := json.NewDecoder(algs2Req.Body)
@@ -143,15 +143,16 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 
 		if err != nil {
 			// Handle error in parsing response body
-			logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
-			http.Error(w, "Error trying to parse response body.", http.StatusInternalServerError)
+			// logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
+			// http.Error(w, "Error trying to parse response body.", http.StatusInternalServerError)
 
 			// Construct an empty capacity array
-			capacity = Capacity{}
+			capacity = append(capacity, Capacity{})
 		}
 	} else { // Response status is not 200 (OK)
 		// Construct an empty capacity array
-		capacity = Capacity{}
+		capacity = append(capacity, Capacity{})
+
 	}
 
 	var users_list []users.User
@@ -233,9 +234,6 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 		http.Error(w, "Error parsing generated schedule.", http.StatusInternalServerError)
 		return
 	}
-
-	// Print the algs2Payload variable
-	fmt.Println("algs1Payload:", string(algs1Payload))
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
