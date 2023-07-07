@@ -153,20 +153,6 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 		capacity = append(capacity, Capacity{})
 
 	}
-<<<<<<< HEAD
-
-	// Debugging
-
-	// Print the algs2Payload variable
-	fmt.Println("algs2Payload:", string(algs2Payload))
-
-	// Print the algs2Req variable
-	fmt.Println("algs2Req:", algs2Req)
-
-	// Print the capacity variable
-	fmt.Println("capacity:", capacity)
-=======
->>>>>>> e1fdab7a7239205298ce4ad6d23f3d16a62ea81c
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
@@ -228,7 +214,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 
 	// Create Algs 1 Request
 	var new_algs1_request Algs1_Request
-	new_algs1_request.Year, _ = strconv.Atoi(year)
+	new_algs1_request.Year = year
 	new_algs1_request.Term = term
 	new_algs1_request.Users = users_list
 	new_algs1_request.Courses = courses_list
