@@ -66,7 +66,7 @@ func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 	// Send a response indicating successful classroom creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Classroom created successfully")
+	// fmt.Fprintf(w, "Classroom created successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("CreateClassroom function completed.")
@@ -232,7 +232,7 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 	// Send a response indicating successful classroom update
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Classroom updated successfully")
+	// fmt.Fprintf(w, "Classroom updated successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("UpdateClassroom function completed.")
@@ -292,7 +292,7 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 	// Send a response indicating successful classroom deletion
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Classroom deleted successfully")
+	// fmt.Fprintf(w, "Classroom deleted successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("DeleteClassroom function completed.")

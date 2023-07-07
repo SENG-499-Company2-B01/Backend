@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -20,7 +19,7 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Year  int    `json:"year"`
+	Year  string `json:"year"`
 	Terms []Term `json:"terms"`
 }
 
@@ -45,18 +44,27 @@ type Class struct {
 }
 
 type Algs2_Request struct {
-	Year    int              `json:"year"`
+	Year    string           `json:"year"`
 	Term    string           `json:"term"`
 	Courses []courses.Course `json:"courses"`
 }
 
 type Algs1_Request struct {
-	Year       int                    `json:"year"`
+	Year       string                 `json:"year"`
 	Term       string                 `json:"term"`
 	Users      []users.User           `json:"users"`
 	Courses    []courses.Course       `json:"courses"`
 	Classrooms []classrooms.Classroom `json:"classrooms"`
-	Capacity   map[string]int         `json:"capacity"`
+	Capacity   []Capacity             `json:"capacity"`
+}
+
+type Estimate struct {
+	Course   string `json:"course"`
+	Estimate int    `json:"estimate"`
+}
+
+type Capacity struct {
+	Estimate []Estimate `json:"estimates"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -75,7 +83,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	}
 
 	// Extract the year and term from path
-	year, _ := strconv.Atoi(path[2])
+	year := path[2]
 	term := path[3]
 
 	// Check if passed term is valid
@@ -86,6 +94,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	}
 
 	var courses_list []courses.Course
+
 	// Retrieve all documents from the MongoDB collection
 	cursor1, err := courses_coll.Find(context.TODO(), bson.M{})
 	if err != nil {
@@ -124,16 +133,26 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	algs2Payload := []byte(algs2RequestBody)
 	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))
 
-	fmt.Println(algs2Req.Body)
-	//var capacity map[string]int
+	// Check the response status code and populate the capacity array
+	var capacity []Capacity
+	if algs2Req.StatusCode == http.StatusOK { // Response status is 200 (OK)
+		// Parse the response body into the capacity variable
+		decoder := json.NewDecoder(algs2Req.Body)
+		err := decoder.Decode(&capacity)
 
-	// Hard coded until Algs 2 is working properly
-	capacity := make(map[string]int)
-	capacity["CSC110"] = 100
-	capacity["MATH100"] = 99
-	capacity["CSC320"] = 82
-	capacity["CSC360"] = 100
-	//err1 := json.NewDecoder(req.Body).Decode(&capacity)
+		if err != nil {
+			// Handle error in parsing response body
+			// logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
+			// http.Error(w, "Error trying to parse response body.", http.StatusInternalServerError)
+
+			// Construct an empty capacity array
+			capacity = append(capacity, Capacity{})
+		}
+	} else { // Response status is not 200 (OK)
+		// Construct an empty capacity array
+		capacity = append(capacity, Capacity{})
+
+	}
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
@@ -168,8 +187,8 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	// Retrieve all documents from the MongoDB collection
 	cursor3, err := classrooms_coll.Find(context.TODO(), bson.M{})
 	if err != nil {
-		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
-		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("Error retrieving classrooms: "+err.Error()), http.StatusInternalServerError)
+		http.Error(w, "Error retrieving classrooms.", http.StatusInternalServerError)
 		return
 	}
 	defer cursor3.Close(context.TODO())
@@ -177,7 +196,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	// Iterate through the cursor and decode each document into a User struct
 	for cursor3.Next(context.TODO()) {
 		var classroom classrooms.Classroom
-		err := cursor1.Decode(&classroom)
+		err := cursor3.Decode(&classroom)
 		if err != nil {
 			logger.Error(fmt.Errorf("Error iterating cursor: "+err.Error()), http.StatusInternalServerError)
 			http.Error(w, "Error iterating cursor.", http.StatusInternalServerError)
@@ -214,10 +233,11 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 		http.Error(w, "Error parsing generated schedule.", http.StatusInternalServerError)
 		return
 	}
+
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(new_schedule)
-	fmt.Fprintf(w, "New Scheduled generated successfully")
+	// fmt.Fprintf(w, "New Scheduled generated successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("GenerateSchedule function completed.")
@@ -254,7 +274,7 @@ func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *m
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "Schedule has been approved")
+	// fmt.Fprintf(w, "Schedule has been approved")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("ApproveSchedule function completed.")

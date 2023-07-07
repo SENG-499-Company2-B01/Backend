@@ -80,7 +80,7 @@ func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 
 	// Send a response indicating successful user creation
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User created successfully")
+	// fmt.Fprintf(w, "User created successfully")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("CreateUser function completed.")
@@ -232,7 +232,7 @@ func UpdateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 
 	// Send a response indicating successful user update
 	w.WriteHeader(http.StatusOK)
-	fmt.Fprintf(w, "User updated successfully.")
+	// fmt.Fprintf(w, "User updated successfully.")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("UpdateUser function completed.")
