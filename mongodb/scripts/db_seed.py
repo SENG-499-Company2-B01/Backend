@@ -55,9 +55,8 @@ def load_users(coll):
         user = {} 
         user['username'] = row['Firstname'] + '.' + row['Lastname'] 
         user['email'] = row['Email'] 
-        user['password'] = gen_pw(user['username'],pw_secret)
-        user['firstname'] = row['Firstname'] 
-        user['lastname'] = row['Lastname'] 
+        user['password'] = gen_pw(user['username'],pw_secret) 
+        user['name'] = row['Firstname'] + ' ' + row['Lastname']
 
         if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
@@ -66,7 +65,7 @@ def load_users(coll):
 
         user['peng'] = (row['Peng'] == 1) 
         user['pref_approved'] = False
-        user['max_courses'] = None
+        user['max_courses'] = 6
         # Convert qualifications string to array of strings 
       
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
