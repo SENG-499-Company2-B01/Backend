@@ -193,7 +193,11 @@ def load_old_schedules(coll):
         
         if prev_term != term:  
             term_count += 1 
-            schedule["terms"].append({"term":term,"courses":[]})  
+            schedule["terms"].append({"term":term,"courses":[]})   
+
+        # Skip A02 Terms since we already have added them via the add_courses function
+        if str(row['Num']) == "A02": 
+            continue
 
 
         schedule = add_course(schedule,row,term_count,schedules_df,index) 
