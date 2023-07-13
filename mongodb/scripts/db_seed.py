@@ -33,7 +33,54 @@ def parse_prereq(input):
     for i in range(len(output)): 
         output[i] = output[i].split(":") 
 
-    return output
+    return output 
+
+def add_course(schedule,row,term_count,df,index): 
+
+    course = row['Course']  
+    section_num = row['Num'] 
+    building = row['Building'] 
+    professor = row['Professor'] 
+    num_seats = int(row['Num_Seats'])
+    num_registered = int(row['Enrolled'])
+
+    # We simply do not have these values currently in our dataset
+    start_time = "" 
+    end_time = "" 
+
+    course_dict = {} 
+    course_dict['course'] = course 
+    course_dict['sections'] = [{"num":section_num,"building":building, 
+                                "professor":professor,"days":[], 
+                                "num_seats":num_seats,"num_registered":num_registered, 
+                                "start_time":start_time,"end_time":end_time}] 
+    
+    # Check if there is an A02 section, and if so add it to the sections JSON
+    try:
+        new_row = df.iloc[index+1]  
+
+        if str(new_row['Num']) == "A02": 
+
+            course = new_row['Course']  
+            section_num = new_row['Num'] 
+            building = new_row['Building'] 
+            professor = new_row['Professor'] 
+            num_seats = int(new_row['Num_Seats'])
+            num_registered = int(new_row['Enrolled'])
+
+            course_dict['sections'].append({"num":section_num,"building":building, 
+                                "professor":professor,"days":[], 
+                                "num_seats":num_seats,"num_registered":num_registered, 
+                                "start_time":start_time,"end_time":end_time})
+
+
+    except:  
+        print("INFO ... End of classes.csv file")
+
+
+    schedule["terms"][term_count]["courses"].append(course_dict) 
+
+    return schedule
 
 
 def load_users(coll): 
@@ -114,8 +161,44 @@ def load_classrooms(coll):
 
         coll.insert_one(classroom)
 
-    return
+    return 
 
+def load_old_schedules(coll): 
+
+    if check_if_not_empty(coll,'prev_schedules'): 
+        return 
+    
+    schedules_df = pd.read_csv("classes.csv") 
+    schedule = {} 
+    prev_year = 2008 
+    prev_term = "summer" 
+    schedule['year'] = prev_year 
+    schedule['terms'] = [{"term":prev_term,"courses":[]}] 
+    term_count = 0
+
+    for index, row in schedules_df.iterrows(): 
+
+        year = row['Year']  
+        term = row['Term']
+        
+        if prev_year != year: 
+            coll.insert_one(schedule) 
+            schedule = {} 
+            schedule["year"] = year  
+            schedule["terms"] = [{"term":term,"courses":[]}]
+            prev_year = year  
+            prev_term = term
+            term_count = 0
+
+        
+        if prev_term != term:  
+            term_count += 1 
+            schedule["terms"].append({"term":term,"courses":[]})  
+
+
+        schedule = add_course(schedule,row,term_count,schedules_df,index) 
+    
+    coll.insert_one(schedule)
 
 def db_seed():
 
@@ -130,12 +213,14 @@ def db_seed():
 
     user_collection = db['users']  
     courses_collection = db['courses'] 
-    classrooms_collection = db['classrooms']
+    classrooms_collection = db['classrooms'] 
+    schedules_collection = db['previous_schedules']
 
 
     load_users(user_collection)
     load_courses(courses_collection) 
-    load_classrooms(classrooms_collection)
+    load_classrooms(classrooms_collection) 
+    load_old_schedules(schedules_collection)
 
 if __name__ == "__main__": 
     db_seed()
