@@ -107,12 +107,10 @@ def load_classrooms(coll):
 
     for index, row in classrooms_df.iterrows(): 
 
-        classroom = {} 
-        classroom['shorthand'] = row['Shorthand'] 
-        classroom['building'] = row['Building Name'] 
+        classroom = {}
+        classroom['building'] = row['Shorthand'] 
         classroom['capacity'] = row['Capacity'] 
-        classroom['room_number'] = row['Room Number'] 
-        classroom['Equipment'] = []  
+        classroom['room'] = row['Room Number'] 
 
         coll.insert_one(classroom)
 
