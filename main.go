@@ -207,6 +207,26 @@ func handleCourseRequests(router *mux.Router) {
 }
 
 func handleScheduleRequests(router *mux.Router) {
+	// Schedules Generation Endpoints
+	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"),
+			client.Database("schedule_db").Collection("users"), client.Database("schedule_db").Collection("courses"),
+			client.Database("schedule_db").Collection("classrooms"), algs1_api, algs2_api)
+	}).Methods(http.MethodPost)
+
+	// Schedules Read Operations
+	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodGet)
+
+	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodGet)
+
+	// Schedules Update Operation
+	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
+	}).Methods(http.MethodPut)
 
 	// Previous Schedule Operations
 	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
@@ -215,18 +235,6 @@ func handleScheduleRequests(router *mux.Router) {
 
 	router.HandleFunc("/schedules/prev", func(w http.ResponseWriter, r *http.Request) {
 		schedules.ApproveSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"), client.Database("schedule_db").Collection("previous_schedules"))
-	}).Methods(http.MethodPost)
-
-	// Schedules Read Operation
-	router.HandleFunc("/schedules", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
-	}).Methods(http.MethodGet)
-
-	// Schedules Generation Endpoints
-	router.HandleFunc("/schedules/{year}/{term}/generate", func(w http.ResponseWriter, r *http.Request) {
-		schedules.GenerateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"),
-			client.Database("schedule_db").Collection("users"), client.Database("schedule_db").Collection("courses"),
-			client.Database("schedule_db").Collection("classrooms"), algs1_api, algs2_api)
 	}).Methods(http.MethodPost)
 }
 
