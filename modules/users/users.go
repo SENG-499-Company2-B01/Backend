@@ -18,8 +18,7 @@ type User struct {
 	Username      string                `json:"username" bson:"username"`
 	Email         string                `json:"email" bson:"email"`
 	Password      string                `json:"password" bson:"password"`
-	Firstname     string                `json:"firstname" bson:"firstname"`
-	LastName      string                `json:"lastname" bson:"lastname"`
+	Name          string                `json:"name" bson:"name"`
 	IsAdmin       bool                  `json:"-" bson:"isAdmin"`
 	Peng          bool                  `json:"peng" bson:"peng"`
 	Pref_approved bool                  `json:"pref_approved" bson:"pref_approved"`
