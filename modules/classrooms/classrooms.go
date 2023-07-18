@@ -123,19 +123,19 @@ func GetClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 
 	// Parse request params
 	vars := mux.Vars(r)
-	shorthand, ok := vars["shorthand"]
+	building, ok := vars["building"]
 	if !ok {
-		logger.Error(fmt.Errorf("shorthand is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("building is missing in parameters"), http.StatusBadRequest)
 		return
 	}
-	room_number, ok := vars["room_number"]
+	room_number, ok := vars["room"]
 	if !ok {
-		logger.Error(fmt.Errorf("room_number is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("room is missing in parameters"), http.StatusBadRequest)
 		return
 	}
 
 	// Store the filter
-	filter := bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter := bson.M{"building": building, "room": room_number}
 
 	// Store the retrieved classroom
 	var classroom Classroom
@@ -168,22 +168,22 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 	// Parse request params
 	vars := mux.Vars(r)
-	shorthand, ok := vars["shorthand"]
+	building, ok := vars["building"]
 	if !ok {
-		logger.Error(fmt.Errorf("shorthand is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("building is missing in parameters"), http.StatusBadRequest)
 		return
 	}
-	room_number, ok := vars["room_number"]
+	room_number, ok := vars["room"]
 	if !ok {
-		logger.Error(fmt.Errorf("room_number is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("room is missing in parameters"), http.StatusBadRequest)
 		return
 	}
 
 	// Check if the shorthand exists in the collection
 	filter := bson.M{
 		"$and": []bson.M{
-			{"shorthand": shorthand},
-			{"room_number": room_number},
+			{"building": building},
+			{"room": room_number},
 		},
 	}
 	exists, err := classroomExists(filter, collection)
@@ -203,7 +203,7 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	}
 
 	// Store the filter
-	filter = bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter = bson.M{"building": building, "room": room_number}
 
 	// Parse request body into a map
 	var requestBody map[string]interface{}
@@ -243,22 +243,22 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 
 	// Parse request params
 	vars := mux.Vars(r)
-	shorthand, ok := vars["shorthand"]
+	building, ok := vars["building"]
 	if !ok {
-		logger.Error(fmt.Errorf("shorthand is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("building is missing in parameters"), http.StatusBadRequest)
 		return
 	}
-	room_number, ok := vars["room_number"]
+	room_number, ok := vars["room"]
 	if !ok {
-		logger.Error(fmt.Errorf("room_number is missing in parameters"), http.StatusBadRequest)
+		logger.Error(fmt.Errorf("room is missing in parameters"), http.StatusBadRequest)
 		return
 	}
 
 	// Check if the shorthand exists in the collection
 	filter := bson.M{
 		"$and": []bson.M{
-			{"shorthand": shorthand},
-			{"room_number": room_number},
+			{"building": building},
+			{"room": room_number},
 		},
 	}
 	exists, err := classroomExists(filter, collection)
@@ -278,7 +278,7 @@ func DeleteClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	}
 
 	// Store the filter
-	filter = bson.M{"shorthand": shorthand, "room_number": room_number}
+	filter = bson.M{"building": building, "room": room_number}
 
 	_, err = collection.DeleteOne(context.TODO(), filter)
 	if err != nil {

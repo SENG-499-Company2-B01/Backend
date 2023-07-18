@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net/http"
 	"strconv"
 	"strings"
@@ -97,7 +98,7 @@ func make_array_of_courses_with_capacities(term_courses []courses.Course, pred_c
 			new_course.Peng = false
 			new_course.Prerequisites = term_courses[i].Prerequisites
 			new_course.CoRequisites = term_courses[i].CoRequisites
-			new_course.Pre_enroll = 100
+			new_course.Pre_enroll = rand.Intn(120-80) + 80
 			new_course.Min_enroll = 5
 			new_course.Hours = hours
 			updated_courses = append(updated_courses, new_course)
@@ -143,11 +144,10 @@ func make_schedule_json(year int, term string, algs1_sched Algs1_Schedule) Sched
 }
 
 // GenerateSchedule - Generates a new schedule
-// TODO: Still needs to be implemented once algo team sets up their REST API
+// TODO: Still waiting for Algs 2 to have proper API response
 func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *mongo.Collection, users_coll *mongo.Collection, courses_coll *mongo.Collection, classrooms_coll *mongo.Collection, algs1_api string, algs2_api string) {
 	logger.Info("GenerateSchedule function called.")
 
-	fmt.Println("ALGS 1 ", algs1_api)
 	// Extract the year and term values from the URL path
 	path := strings.Split(r.URL.Path, "/")
 	if len(path) < 4 {
@@ -204,8 +204,6 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs2_request.Year = year
 	new_algs2_request.Term = strings.ToLower(term)
 	new_algs2_request.Courses = courses_list
-
-	fmt.Println(new_algs2_request)
 
 	algs2RequestBody, _ := json.Marshal(new_algs2_request)
 	algs2Payload := []byte(algs2RequestBody)
@@ -345,10 +343,6 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(new_schedule)
-	// fmt.Fprintf(w, "New Scheduled generated successfully")
-
-	// Uncomment the follow line for debugging
-	// logger.Info("GenerateSchedule function completed.")
 }
 
 // ApproveSchedule - removes schedule in draft collection and adds it to previous_schedules collection, approving it.
