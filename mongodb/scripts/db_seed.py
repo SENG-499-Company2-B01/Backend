@@ -118,7 +118,8 @@ def load_users(coll):
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
         qualifications = string_qualifications.split(",")
         user['course_pref'] = qualifications 
-        user['time_pref'] = pref_dict 
+        user['time_pref'] = pref_dict  
+        user['available'] = pref_dict
 
         coll.insert_one(user)
 

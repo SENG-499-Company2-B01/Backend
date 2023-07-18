@@ -25,6 +25,7 @@ type User struct {
 	Max_courses   int                   `json:"max_courses" bson:"max_courses"`
 	Course_pref   []string              `json:"course_pref" bson:"course_pref"`
 	Time_pref     map[string][][]string `json:"time_pref" bson:"time_pref"`
+	Available     map[string][][]string `json:"available" bson:"available"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
