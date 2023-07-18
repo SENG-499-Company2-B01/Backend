@@ -172,7 +172,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	var courses_list []courses.Course
 
 	// Retrieve all documents from the MongoDB collection
-	cursor1, err := courses_coll.Find(context.TODO(), bson.M{})
+	cursor1, err := courses_coll.Find(context.TODO(), bson.M{"terms_offered": bson.M{"$regex": term}})
 	if err != nil {
 		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
