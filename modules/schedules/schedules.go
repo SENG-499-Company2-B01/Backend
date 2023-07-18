@@ -51,12 +51,11 @@ type Algs2_Request struct {
 }
 
 type Algs1_Request struct {
-	Year       string                 `json:"year"`
-	Term       string                 `json:"term"`
-	Users      []users.User           `json:"users"`
-	Courses    []courses.Course       `json:"courses"`
-	Classrooms []classrooms.Classroom `json:"classrooms"`
-	Capacity   []Capacity             `json:"capacity"`
+	Year       string                  `json:"year"`
+	Term       string                  `json:"term"`
+	Users      []users.User            `json:"users"`
+	Courses    []CoursesWithCapacities `json:"courses"`
+	Classrooms []classrooms.Classroom  `json:"classrooms"`
 }
 
 type Estimate struct {
@@ -64,8 +63,17 @@ type Estimate struct {
 	Estimate int    `json:"estimate"`
 }
 
+type CoursesWithCapacities struct {
+	ShortHand     string     `json:"shorthand" bson:"shorthand"`
+	Name          string     `json:"name" bson:"name"`
+	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
+	CoRequisites  []string   `json:"corequisites" bson:"corequisites"`
+	TermsOffered  []string   `json:"terms_offered" bson:"terms_offered"`
+	Capacity      int        `json:"capacity" bson:"capacity"`
+}
+
 type Capacity struct {
-	Estimate []Estimate `json:"estimates"`
+	Estimate []Estimate `json:"estimate"`
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -97,7 +105,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	var courses_list []courses.Course
 
 	// Retrieve all documents from the MongoDB collection
-	cursor1, err := courses_coll.Find(context.TODO(), bson.M{})
+	cursor1, err := courses_coll.Find(context.TODO(), bson.M{"term": strings.ToLower(term)})
 	if err != nil {
 		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
@@ -151,8 +159,13 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 		}
 	} else { // Response status is not 200 (OK)
 		// Construct an empty capacity array
+		// create a random number between 80 and 100 for each course.
 		capacity = append(capacity, Capacity{})
+	}
 
+	// Loop through the estimate object to create the CoursesWithCapacities object.
+	for i := 0; i < len(capacity[0].Estimate); i++ {
+		// Loop through the courses list to find the course with the same shorthand.
 	}
 
 	var users_list []users.User
@@ -218,9 +231,8 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs1_request.Year = year
 	new_algs1_request.Term = term
 	new_algs1_request.Users = users_list
-	new_algs1_request.Courses = courses_list
+	// new_algs1_request.Courses = courses_list
 	new_algs1_request.Classrooms = classrooms_list
-	new_algs1_request.Capacity = capacity
 
 	algs1RequestBody, _ := json.Marshal(new_algs1_request)
 	algs1Payload := []byte(algs1RequestBody)
