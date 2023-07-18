@@ -18,14 +18,13 @@ type User struct {
 	Username      string                `json:"username" bson:"username"`
 	Email         string                `json:"email" bson:"email"`
 	Password      string                `json:"password" bson:"password"`
-	Firstname     string                `json:"firstname" bson:"firstname"`
-	LastName      string                `json:"lastname" bson:"lastname"`
+	Name          string                `json:"name" bson:"name"`
 	IsAdmin       bool                  `json:"-" bson:"isAdmin"`
 	Peng          bool                  `json:"peng" bson:"peng"`
 	Pref_approved bool                  `json:"pref_approved" bson:"pref_approved"`
 	Max_courses   int                   `json:"max_courses" bson:"max_courses"`
 	Course_pref   []string              `json:"course_pref" bson:"course_pref"`
-	Available     map[string][][]string `json:"available" bson:"available"`
+	Time_pref     map[string][][]string `json:"time_pref" bson:"time_pref"`
 }
 
 func CreateUser(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {

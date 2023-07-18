@@ -14,10 +14,9 @@ import (
 )
 
 type Classroom struct {
-	Shorthand   string `json:"shorthand"`
 	Building    string `json:"building"`
 	Capacity    int    `json:"capacity"`
-	Room_number string `json:"room"`
+	Room_number string `json:"room" bson:"room"`
 }
 
 // CreateClassroom handles the creation of a new classroom
@@ -36,7 +35,7 @@ func CreateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	}
 
 	// Check if shorthand already exists in the collection
-	filter := bson.M{"shorthand": newClassroom.Shorthand}
+	filter := bson.M{"building": newClassroom.Building}
 	count, err := collection.CountDocuments(context.TODO(), filter, nil)
 
 	if err != nil {

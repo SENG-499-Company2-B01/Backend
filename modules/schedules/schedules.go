@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -19,8 +21,12 @@ import (
 
 // Schedule represents a schedule entity
 type Schedule struct {
-	Year  string `json:"year"`
+	Year  int    `json:"year"`
 	Terms []Term `json:"terms"`
+}
+
+type Algs1_Schedule struct {
+	Schedule []CourseOffering `json:"schedule"`
 }
 
 type Term struct {
@@ -34,14 +40,15 @@ type CourseOffering struct {
 }
 
 type Class struct {
-	Num           string   `json:"num"`
-	Building      string   `json:"building"`
-	Professor     string   `json:"professor"`
-	Days          []string `json:"days"`
-	NumSeats      int      `json:"num_seats"`
-	NumRegistered int      `json:"num_registered"`
-	StartTime     string   `json:"start_time"`
-	EndTime       string   `json:"end_time"`
+	Num       string   `json:"num"`
+	Building  string   `json:"building"`
+	Room      string   `json:"room"`
+	Professor string   `json:"professor"`
+	Days      []string `json:"days"`
+	NumSeats  int      `json:"num_seats"`
+	NumEnroll int      `json:"num_enroll"`
+	StartTime string   `json:"start_time"`
+	EndTime   string   `json:"end_time"`
 }
 
 type Algs2_Request struct {
@@ -64,16 +71,75 @@ type Estimate struct {
 }
 
 type CoursesWithCapacities struct {
-	ShortHand     string     `json:"shorthand" bson:"shorthand"`
-	Name          string     `json:"name" bson:"name"`
+	Course        string     `json:"course" bson:"course"`
+	Peng          bool       `json:"peng" bson:"peng"`
 	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
 	CoRequisites  []string   `json:"corequisites" bson:"corequisites"`
-	TermsOffered  []string   `json:"terms_offered" bson:"terms_offered"`
-	Capacity      int        `json:"capacity" bson:"capacity"`
+	Pre_enroll    int        `json:"pre_enroll" bson:"pre_enroll"`
+	Min_enroll    int        `json:"min_enroll" bson:"min_enroll"`
+	Hours         [3]int     `json:"hours" bson:"hours"`
 }
 
 type Capacity struct {
-	Estimate []Estimate `json:"estimate"`
+	Estimates []Estimate `json:"estimates"`
+}
+
+func make_array_of_courses_with_capacities(term_courses []courses.Course, pred_capacities Capacity) []CoursesWithCapacities {
+
+	hours := [3]int{3, 0, 0}
+	var updated_courses []CoursesWithCapacities
+	for i := 0; i < len(term_courses); i++ {
+
+		course_name := term_courses[i].ShortHand
+		if len(pred_capacities.Estimates) == 0 {
+			var new_course CoursesWithCapacities
+			new_course.Course = course_name
+			new_course.Peng = false
+			new_course.Prerequisites = term_courses[i].Prerequisites
+			new_course.CoRequisites = term_courses[i].CoRequisites
+			new_course.Pre_enroll = 100
+			new_course.Min_enroll = 5
+			new_course.Hours = hours
+			updated_courses = append(updated_courses, new_course)
+
+		} else {
+			for j := 0; j < len(pred_capacities.Estimates); j++ {
+
+				pred_course_name := pred_capacities.Estimates[j].Course
+				if course_name == pred_course_name {
+
+					var new_course CoursesWithCapacities
+					new_course.Course = course_name
+					new_course.Peng = false
+					new_course.Prerequisites = term_courses[i].Prerequisites
+					new_course.CoRequisites = term_courses[i].CoRequisites
+					new_course.Pre_enroll = pred_capacities.Estimates[j].Estimate
+					new_course.Min_enroll = 5
+					new_course.Hours = hours
+					updated_courses = append(updated_courses, new_course)
+					break
+				}
+
+			}
+		}
+	}
+
+	return updated_courses
+}
+
+func make_schedule_json(year int, term string, algs1_sched Algs1_Schedule) Schedule {
+
+	var final_schedule Schedule
+	final_schedule.Year = year
+
+	var terms []Term
+	var current_term Term
+	current_term.Term = term
+	current_term.Courses = algs1_sched.Schedule
+	terms = append(terms, current_term)
+	final_schedule.Terms = terms
+
+	return final_schedule
 }
 
 // GenerateSchedule - Generates a new schedule
@@ -81,6 +147,7 @@ type Capacity struct {
 func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *mongo.Collection, users_coll *mongo.Collection, courses_coll *mongo.Collection, classrooms_coll *mongo.Collection, algs1_api string, algs2_api string) {
 	logger.Info("GenerateSchedule function called.")
 
+	fmt.Println("ALGS 1 ", algs1_api)
 	// Extract the year and term values from the URL path
 	path := strings.Split(r.URL.Path, "/")
 	if len(path) < 4 {
@@ -105,7 +172,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	var courses_list []courses.Course
 
 	// Retrieve all documents from the MongoDB collection
-	cursor1, err := courses_coll.Find(context.TODO(), bson.M{"term": strings.ToLower(term)})
+	cursor1, err := courses_coll.Find(context.TODO(), bson.M{})
 	if err != nil {
 		logger.Error(fmt.Errorf("Error retrieving users: "+err.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error retrieving users.", http.StatusInternalServerError)
@@ -138,35 +205,38 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs2_request.Term = strings.ToLower(term)
 	new_algs2_request.Courses = courses_list
 
+	fmt.Println(new_algs2_request)
+
 	algs2RequestBody, _ := json.Marshal(new_algs2_request)
 	algs2Payload := []byte(algs2RequestBody)
 	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))
 
 	// Check the response status code and populate the capacity array
-	var capacity []Capacity
+	var capacity Capacity
 	if algs2Req.StatusCode == http.StatusOK { // Response status is 200 (OK)
 		// Parse the response body into the capacity variable
 		decoder := json.NewDecoder(algs2Req.Body)
 		err := decoder.Decode(&capacity)
 
 		if err != nil {
+
+			//fmt.Println("Error parsing Algs 2 response")
 			// Handle error in parsing response body
-			// logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
+			logger.Error(fmt.Errorf("Error trying to parse response body: "+err.Error()), http.StatusInternalServerError)
 			// http.Error(w, "Error trying to parse response body.", http.StatusInternalServerError)
 
 			// Construct an empty capacity array
-			capacity = append(capacity, Capacity{})
+			//capacity = capacity
 		}
+
 	} else { // Response status is not 200 (OK)
 		// Construct an empty capacity array
 		// create a random number between 80 and 100 for each course.
-		capacity = append(capacity, Capacity{})
+		fmt.Println("NON 200 Status for Algs 2")
+		//capacity = capacity
 	}
 
-	// Loop through the estimate object to create the CoursesWithCapacities object.
-	for i := 0; i < len(capacity[0].Estimate); i++ {
-		// Loop through the courses list to find the course with the same shorthand.
-	}
+	final_course := make_array_of_courses_with_capacities(courses_list, capacity)
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
@@ -231,22 +301,39 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs1_request.Year = year
 	new_algs1_request.Term = term
 	new_algs1_request.Users = users_list
-	// new_algs1_request.Courses = courses_list
+	new_algs1_request.Courses = final_course
 	new_algs1_request.Classrooms = classrooms_list
 
 	algs1RequestBody, _ := json.Marshal(new_algs1_request)
 	algs1Payload := []byte(algs1RequestBody)
-	algs1Req, _ := http.Post(algs1_api, "application/json", bytes.NewBuffer(algs1Payload))
+	algs1Req, err := http.Post(algs1_api, "application/json", bytes.NewBuffer(algs1Payload))
 
-	var new_schedule Schedule
-	final_err := json.NewDecoder(algs1Req.Body).Decode(&new_schedule)
+	if err != nil {
+		logger.Error(fmt.Errorf("Error sending Algs 1 request: "+err.Error()), http.StatusInternalServerError)
+	}
 
-	if final_err != nil {
-		logger.Error(fmt.Errorf("Error parsing generated schedule: "+final_err.Error()), http.StatusInternalServerError)
+	fmt.Println("Request sent to Algs 1 ...")
+
+	var temp_schedule Algs1_Schedule
+	var final_error error
+	if algs1Req.StatusCode == http.StatusOK {
+		fmt.Println("Valid request to Algs 1 ...")
+		final_error = json.NewDecoder(algs1Req.Body).Decode(&temp_schedule)
+	} else {
+		fmt.Println("Algs 1 response ...", algs1Req.StatusCode)
+		final_error = errors.New(algs1Req.Body.Close().Error())
+	}
+
+	if final_error != nil {
+		logger.Error(fmt.Errorf("Error parsing generated schedule: "+final_error.Error()), http.StatusInternalServerError)
 		http.Error(w, "Error parsing generated schedule.", http.StatusInternalServerError)
 		return
 	}
 
+	// Make the final schedule JSON
+	var new_schedule Schedule
+	year_int, _ := strconv.Atoi(year)
+	new_schedule = make_schedule_json(year_int, term, temp_schedule)
 	// Store the schedule in the MongoDB collection
 	_, insertErr := draft_schedules.InsertOne(context.TODO(), new_schedule)
 	if insertErr != nil {
