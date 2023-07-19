@@ -132,7 +132,11 @@ func Users_API_Access_Control(next http.Handler, collection *mongo.Collection) h
 
 		// Role based access for previous schedules endpoints
 		if r.URL.Path == "/schedules/prev" {
-			if !jwtInfo.IsAdmin {
+			if r.Method == "GET" {
+				next.ServeHTTP(w, r)
+				return
+			}
+			if r.Method == "POST" && !jwtInfo.IsAdmin {
 				http.Error(w, "Forbidden", http.StatusForbidden)
 				logger.Error(fmt.Errorf("Forbidden - /schedules/prev CRUD operation requested by non admin - "+jwtInfo.Email), http.StatusForbidden)
 				return
