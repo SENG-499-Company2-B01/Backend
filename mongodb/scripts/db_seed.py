@@ -225,7 +225,7 @@ def db_seed():
     load_users(user_collection)
     load_courses(courses_collection) 
     load_classrooms(classrooms_collection) 
-    load_old_schedules(schedules_collection)
+    # load_old_schedules(schedules_collection)
 
 if __name__ == "__main__": 
     db_seed()

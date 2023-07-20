@@ -219,12 +219,12 @@ func handleScheduleRequests(router *mux.Router) {
 		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/schedules/{year}/{term}", func(w http.ResponseWriter, r *http.Request) {
 		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
 	// Schedules Update Operation
-	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/schedules/{year}/{term}", func(w http.ResponseWriter, r *http.Request) {
 		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodPut)
 
