@@ -52,10 +52,9 @@ type Class struct {
 	EndTime   string   `json:"end_time"`
 }
 
-type Algs2_Request struct {
-	Year    string           `json:"year"`
-	Term    string           `json:"term"`
-	Courses []courses.Course `json:"courses"`
+type Frontend_Request struct {
+	Year    int      `json:"year"`
+	Term    string   `json:"term"`
 }
 
 type Algs1_Request struct {
@@ -64,6 +63,12 @@ type Algs1_Request struct {
 	Users      []users.User            `json:"users"`
 	Courses    []CoursesWithCapacities `json:"courses"`
 	Classrooms []classrooms.Classroom  `json:"classrooms"`
+}
+
+type Algs2_Request struct {
+	Year    string           `json:"year"`
+	Term    string           `json:"term"`
+	Courses []courses.Course `json:"courses"`
 }
 
 type Estimate struct {
@@ -332,6 +337,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	var new_schedule Schedule
 	year_int, _ := strconv.Atoi(year)
 	new_schedule = make_schedule_json(year_int, term, temp_schedule)
+
 	// Store the schedule in the MongoDB collection
 	_, insertErr := draft_schedules.InsertOne(context.TODO(), new_schedule)
 	if insertErr != nil {
@@ -349,9 +355,31 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *mongo.Collection, previousSchedulesCollection *mongo.Collection) {
 	logger.Info("ApproveSchedule function called.")
 
+	// Extract the year and term from the request body
+	var requestBody Frontend_Request
+	err := json.NewDecoder(r.Body).Decode(&requestBody)
+	if err != nil {
+		logger.Error(fmt.Errorf("Error decoding the request body: "+err.Error()), http.StatusBadRequest)
+		http.Error(w, "Error decoding the request body.", http.StatusBadRequest)
+		return
+	}
+
+	// Check if passed term is valid
+	if strings.ToLower(requestBody.Term) != "fall" && strings.ToLower(requestBody.Term) != "spring" && strings.ToLower(requestBody.Term) != "summer" {
+		logger.Error(fmt.Errorf("invalid term for generating schedule"), http.StatusBadRequest)
+		http.Error(w, "Invalid Term for Generating Schedule", http.StatusBadRequest)
+		return
+	}
+
+	// Prepare the filter to find the specific schedule
+	filter := bson.M{
+		"year": requestBody.Year,
+		"terms.term": requestBody.Term,
+	}
+
 	// Find the schedule in the "draft_schedule" collection
 	var foundSchedule Schedule
-	err := draftsCollection.FindOne(context.TODO(), bson.M{}).Decode(&foundSchedule)
+	err = draftsCollection.FindOne(context.TODO(), filter).Decode(&foundSchedule)
 	if err != nil {
 		logger.Error(fmt.Errorf("failed to find schedule in drafts collection"), http.StatusInternalServerError)
 		http.Error(w, "Failed to find schedule.", http.StatusInternalServerError)
@@ -367,7 +395,7 @@ func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *m
 	}
 
 	// Delete the schedule from the "draft_schedule" collection
-	_, err = draftsCollection.DeleteOne(context.TODO(), bson.M{})
+	_, err = draftsCollection.DeleteOne(context.TODO(), filter)
 	if err != nil {
 		logger.Error(fmt.Errorf("failed to delete from drafts collection"), http.StatusInternalServerError)
 		http.Error(w, "Failed to delete schedule.", http.StatusInternalServerError)
@@ -376,7 +404,7 @@ func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *m
 
 	// Send a response indicating successful schedule creation
 	w.WriteHeader(http.StatusOK)
-	// fmt.Fprintf(w, "Schedule has been approved")
+	fmt.Fprintf(w, "Schedule has been approved")
 
 	// Uncomment the follow line for debugging
 	// logger.Info("ApproveSchedule function completed.")
@@ -435,31 +463,49 @@ func GetSchedules(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("GetSchedule function called.")
 
-	// Extract the schedule year from the URL path
-	path := r.URL.Path
-	year := strings.TrimPrefix(path, "/schedules/")
-	year = strings.TrimSpace(year)
+	// Parse the URL parameters
+	params := strings.Split(r.URL.Path, "/")
+	if len(params) < 4 {
+		logger.Error(fmt.Errorf("invalid URL path"), http.StatusBadRequest)
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
 
-	// Retrieve the schedule from the MongoDB collection
-	filter := bson.M{"year": year}
+	// Extract year and term from the URL
+	year, err := strconv.Atoi(params[2])
+	if err != nil {
+		logger.Error(fmt.Errorf("invalid year"), http.StatusBadRequest)
+		http.Error(w, "Invalid year", http.StatusBadRequest)
+		return
+	}
+	term := params[3]
+
+	// Check if passed term is valid
+	if strings.ToLower(term) != "fall" && strings.ToLower(term) != "spring" && strings.ToLower(term) != "summer" {
+		logger.Error(fmt.Errorf("invalid term for generating schedule"), http.StatusBadRequest)
+		http.Error(w, "Invalid Term for Generating Schedule", http.StatusBadRequest)
+		return
+	}
+
+	// Prepare the filter to find the specific schedule
+	filter := bson.M{
+		"year": year, 
+		"terms.term": term,
+	}
+
+	// Find the schedule in the database
 	var schedule Schedule
-	err := collection.FindOne(context.TODO(), filter).Decode(&schedule)
+	err = collection.FindOne(context.TODO(), filter).Decode(&schedule)
 	if err != nil {
 		if err == mongo.ErrNoDocuments {
-			// If the schedule is not found,
-			// log the error and return a not found response
-			logger.Error(fmt.Errorf("Schedule not found: "+err.Error()), http.StatusNotFound)
-			http.Error(w, "Schedule not found.", http.StatusNotFound)
+			http.Error(w, "Schedule not found", http.StatusNotFound)
 		} else {
-			// If there is an error retrieving the schedule,
-			// log the error and return an internal server error response
-			logger.Error(fmt.Errorf("Error getting schedule: "+err.Error()), http.StatusInternalServerError)
-			http.Error(w, "Error getting schedule.", http.StatusInternalServerError)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
 		}
 		return
 	}
 
-	// Send a response with the retrieved schedule
+	// Send a response with the retrieved schedules
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(schedule)
 
@@ -471,13 +517,36 @@ func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Colle
 func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Collection) {
 	logger.Info("UpdateSchedule function called.")
 
-	// Extract the schedule year from the URL path
-	path := r.URL.Path
-	year := strings.TrimPrefix(path, "/schedules/")
-	year = strings.TrimSpace(year)
+	// Parse the URL parameters
+	params := strings.Split(r.URL.Path, "/")
+	if len(params) < 4 {
+		logger.Error(fmt.Errorf("invalid URL path"), http.StatusBadRequest)
+		http.Error(w, "Invalid URL format", http.StatusBadRequest)
+		return
+	}
 
-	// Check if the year exists in the collection
-	filter := bson.M{"year": year}
+	// Extract year and term from the URL
+	year, err := strconv.Atoi(params[2])
+	if err != nil {
+		logger.Error(fmt.Errorf("invalid year"), http.StatusBadRequest)
+		http.Error(w, "Invalid year", http.StatusBadRequest)
+		return
+	}
+	term := params[3]
+
+	// Check if passed term is valid
+	if strings.ToLower(term) != "fall" && strings.ToLower(term) != "spring" && strings.ToLower(term) != "summer" {
+		logger.Error(fmt.Errorf("invalid term for generating schedule"), http.StatusBadRequest)
+		http.Error(w, "Invalid Term for Generating Schedule", http.StatusBadRequest)
+		return
+	}
+
+	// Prepare the filter to find the specific schedule
+	filter := bson.M{
+		"year": year, 
+		"terms.term": term,
+	}
+	
 	exists, err := scheduleExists(filter, collection)
 	if err != nil {
 		// If there is an error querying the collection,
