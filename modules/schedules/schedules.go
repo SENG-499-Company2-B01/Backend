@@ -53,8 +53,8 @@ type Class struct {
 }
 
 type Frontend_Request struct {
-	Year    int      `json:"year"`
-	Term    string   `json:"term"`
+	Year int    `json:"year"`
+	Term string `json:"term"`
 }
 
 type Algs1_Request struct {
@@ -90,7 +90,7 @@ type Capacity struct {
 	Estimates []Estimate `json:"estimates"`
 }
 
-func make_array_of_courses_with_capacities(term_courses []courses.Course, pred_capacities Capacity) []CoursesWithCapacities {
+func createCoursesArray(term_courses []courses.Course, pred_capacities Capacity) []CoursesWithCapacities {
 
 	hours := [3]int{3, 0, 0}
 	var updated_courses []CoursesWithCapacities
@@ -133,7 +133,7 @@ func make_array_of_courses_with_capacities(term_courses []courses.Course, pred_c
 	return updated_courses
 }
 
-func make_schedule_json(year int, term string, algs1_sched Algs1_Schedule) Schedule {
+func createScheduleJSON(year int, term string, algs1_sched Algs1_Schedule) Schedule {
 
 	var final_schedule Schedule
 	final_schedule.Year = year
@@ -239,7 +239,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 		//capacity = capacity
 	}
 
-	final_course := make_array_of_courses_with_capacities(courses_list, capacity)
+	final_course := createCoursesArray(courses_list, capacity)
 
 	var users_list []users.User
 	var classrooms_list []classrooms.Classroom
@@ -308,6 +308,8 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs1_request.Classrooms = classrooms_list
 
 	algs1RequestBody, _ := json.Marshal(new_algs1_request)
+
+	fmt.Println(string(algs1RequestBody))
 	algs1Payload := []byte(algs1RequestBody)
 	algs1Req, err := http.Post(algs1_api, "application/json", bytes.NewBuffer(algs1Payload))
 
@@ -336,7 +338,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	// Make the final schedule JSON
 	var new_schedule Schedule
 	year_int, _ := strconv.Atoi(year)
-	new_schedule = make_schedule_json(year_int, term, temp_schedule)
+	new_schedule = createScheduleJSON(year_int, term, temp_schedule)
 
 	// Store the schedule in the MongoDB collection
 	_, insertErr := draft_schedules.InsertOne(context.TODO(), new_schedule)
@@ -373,7 +375,7 @@ func ApproveSchedule(w http.ResponseWriter, r *http.Request, draftsCollection *m
 
 	// Prepare the filter to find the specific schedule
 	filter := bson.M{
-		"year": requestBody.Year,
+		"year":       requestBody.Year,
 		"terms.term": requestBody.Term,
 	}
 
@@ -489,7 +491,7 @@ func GetSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Colle
 
 	// Prepare the filter to find the specific schedule
 	filter := bson.M{
-		"year": year, 
+		"year":       year,
 		"terms.term": term,
 	}
 
@@ -543,10 +545,10 @@ func UpdateSchedule(w http.ResponseWriter, r *http.Request, collection *mongo.Co
 
 	// Prepare the filter to find the specific schedule
 	filter := bson.M{
-		"year": year, 
+		"year":       year,
 		"terms.term": term,
 	}
-	
+
 	exists, err := scheduleExists(filter, collection)
 	if err != nil {
 		// If there is an error querying the collection,

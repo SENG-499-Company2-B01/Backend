@@ -138,7 +138,13 @@ def load_courses(coll):
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
-        course['terms_offered'] = row['Offered'].replace("[","").replace("]","").split(",")
+        temp_terms = row['Offered'].replace("[","").replace("]","").split(",") 
+
+        # Remove odd whitespaces
+        for i in range(len(temp_terms)): 
+            temp_terms[i] = temp_terms[i].replace(" ","")
+
+        course['terms_offered'] = temp_terms
         course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 
