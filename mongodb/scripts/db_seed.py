@@ -118,7 +118,8 @@ def load_users(coll):
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
         qualifications = string_qualifications.split(",")
         user['course_pref'] = qualifications 
-        user['available'] = pref_dict 
+        user['time_pref'] = pref_dict  
+        user['available'] = pref_dict
 
         coll.insert_one(user)
 
@@ -137,7 +138,13 @@ def load_courses(coll):
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
-        course['terms_offered'] = row['Offered'].replace("[","").replace("]","").split(",")
+        temp_terms = row['Offered'].replace("[","").replace("]","").split(",") 
+
+        # Remove odd whitespaces
+        for i in range(len(temp_terms)): 
+            temp_terms[i] = temp_terms[i].replace(" ","")
+
+        course['terms_offered'] = temp_terms
         course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 
@@ -224,7 +231,7 @@ def db_seed():
     load_users(user_collection)
     load_courses(courses_collection) 
     load_classrooms(classrooms_collection) 
-    load_old_schedules(schedules_collection)
+    # load_old_schedules(schedules_collection)
 
 if __name__ == "__main__": 
     db_seed()

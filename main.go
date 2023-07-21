@@ -166,7 +166,7 @@ func handleClassroomRequests(router *mux.Router) {
 		classrooms.CreateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
 	}).Methods(http.MethodPost)
 
-	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/classrooms/{building}/{room}", func(w http.ResponseWriter, r *http.Request) {
 		classrooms.GetClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
 	}).Methods(http.MethodGet)
 
@@ -174,11 +174,11 @@ func handleClassroomRequests(router *mux.Router) {
 		classrooms.GetClassrooms(w, r, client.Database("schedule_db").Collection("classrooms"))
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/classrooms/{building}/{room}", func(w http.ResponseWriter, r *http.Request) {
 		classrooms.UpdateClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
 	}).Methods(http.MethodPut)
 
-	router.HandleFunc("/classrooms/{shorthand}/{room_number}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/classrooms/{building}/{room}", func(w http.ResponseWriter, r *http.Request) {
 		classrooms.DeleteClassroom(w, r, client.Database("schedule_db").Collection("classrooms"))
 	}).Methods(http.MethodDelete)
 }
@@ -219,12 +219,12 @@ func handleScheduleRequests(router *mux.Router) {
 		schedules.GetSchedules(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
-	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/schedules/{year}/{term}", func(w http.ResponseWriter, r *http.Request) {
 		schedules.GetSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodGet)
 
 	// Schedules Update Operation
-	router.HandleFunc("/schedules/{year}", func(w http.ResponseWriter, r *http.Request) {
+	router.HandleFunc("/schedules/{year}/{term}", func(w http.ResponseWriter, r *http.Request) {
 		schedules.UpdateSchedule(w, r, client.Database("schedule_db").Collection("draft_schedules"))
 	}).Methods(http.MethodPut)
 
