@@ -72,14 +72,31 @@ After is completes, you should be able to open the project in your prefered deve
 
 Configuration for this project is very simple!
 
-Open the project in your developement environment and create a new file in the root folder called `.env`. In there you must follow this exact format, but feel free to change the values for MONGO_USERNAME, MONGO_PASSWORD, and JWT_SECRET.
+Open the project in your developement environment and create a new file in the root folder called `.env`. In there you must follow this exact format, but feel free to change the values as you see fit. Also note that if you are running this project after Augest of 2023, the cloud will no longer be running, so you must change the environment to 'development' unless you set up your own cloud deployment (including running the algorithm APIs)
 
 ```
-MONGO_ADDRESS=10.9.0.3
-MONGO_PORT=27017
-MONGO_USERNAME=admin
-MONGO_PASSWORD=admin
+# Set this variable to 'production' or 'development'
+ENVIRONMENT=production
+
+# Development (local)
+MONGO_LOCAL_HOST=10.9.0.3:27017
+MONGO_LOCAL_USERNAME=admin
+MONGO_LOCAL_PASSWORD=admin
+
+# Production (cloud)
+MONGO_PRODUCTION_HOST=company2-mongocluster.p0vfwcg.mongodb.net
+MONGO_PRODUCTION_USERNAME=admin
+MONGO_PRODUCTION_PASSWORD=LcKERy6JYJGNdfOZ
+
+#Algs 1 & 2 APIs
+ALGS1_API=https://c2algs1.onrender.com/generate
+ALGS2_API=https://algs2.onrender.com/predict
+
+# Shared
+ADMIN_1=rich.little
+ADMIN_2=dan.mai
 JWT_SECRET=secret
+API_HASH=fe80decbd03b2933f3d7eba3079e6b3e7c1bb2e3613f3671388c969fd6cd5aca
 ```
 
 ## Usage
@@ -132,86 +149,156 @@ To interact with one of the server endpoints, you must send a request like any o
 
 Some examples of the requests are as follows:
 
-### Endpoint: Retrieve Specific User
+### Endpoint: Login as a user to get a JWT
 
-**Endpoint:** `http://localhost:8000/users/{id}`
-
-**Method:** `GET`
-
-**Description:** `Retrieves a specific user from the database if they exist.`
-
-**Example Request:**
-
-```
-http
-GET /users/test?test=example HTTP/1.1
-Host: localhost:8000
-Accept: application/json
-```
-
-**Example Request:**
-
-```
-HTTP/1.1 200 OK
-Content-Type: application/json
-
-{
-    "username":"test",
-    "email":"test@telus.net",
-    "password":"password",
-    "firstname":"John",
-    "lastname":"Doe",
-    "preferences":{
-        "key1":"value1",
-        "key2":"value2"
-    },
-    "qualifications":["qualification1","qualification2"]
-}
-```
-
-### Endpoint: Create a new course
-
-**Endpoint:** `http://localhost:8000/courses`
+**Endpoint:** `http://localhost:8000/login`
 
 **Method:** `POST`
 
-**Description:** Creates a new course.
+**Body:** `POST`
 
-**Request Body:**
+- `username` (string): The username of the user.
+- `password` (string): The password of the user.
 
-- `shorthand` (string, required): The shorthand code for the course.
-- `name` (string, required): The name of the course.
-- `equipments` (array of strings, optional): The list of equipment required for the course.
-- `prerequisites` (array of strings, optional): The list of prerequisite courses for the course.
+**Returns:**
+
+- `JWT token` (string): A JSON Web Token (JWT) representing the user session.
+
+**Description:**
+
+`Establishes a user session with the server by sending the user's login credentials (username and password) in the request body. If the provided credentials are valid, the server will respond with a JWT token, which can be used to authenticate subsequent requests to protected endpoints on the server.`
 
 **Example Request:**
 
 ```
-http
-POST /courses HTTP/1.1
+POST /login HTTP/1.1
 Host: localhost:8000
 Content-Type: application/json
+Accept: application/json
 
 {
-  "shorthand": "SENG499",
-  "name": "Design Project II",
-  "equipments": ["projector", "camera"],
-  "prerequisites": ["SENG360", "SENG210"]
+  "username": "Example.User",
+  "password": "Example.User12345"
 }
 ```
 
-**Example Request:**
+**Example Response:**
 
 ```
 HTTP/1.1 200 OK
 Content-Type: application/json
 
 {
-    "shorthand":"SENG499",
-    "name":"Design Project II",
-    "equipment":null,
-    "prerequisites":["SENG360","SENG 210"]
+  "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6ImV4YW1wbGVfdXNlciIsImlhdCI6MTYzMTg4MzM2OSwiZXhwIjoxNjMxODg2OTY5LCJzdWIiOiIxMjM0NTY3ODkwIiwianRpIjoiMTIzNDU2Nzg5MCJ9.FHJhGKQ6b4liP2E-8xw-HUNdbm9AhNDeJ3pHeKf4scw"
 }
+```
+
+### Endpoint: Generating a schedule
+
+**Endpoint:** `http://localhost:8000/:year/:term/generate`
+
+**Method:** `POST`
+
+**Body:** `POST`
+
+- `Token` (string): A JSON Web Token (JWT) representing the user's authentication.
+- `Admin` (boolean): A flag indicating whether the user has administrative privileges.
+- `Schedule`: The schedule data or configuration needed for term generation.
+
+**Returns:**
+
+- `Schedule`: The generated schedule for the specified year and term.
+
+**Description:**
+
+`This endpoint supports the generation of schedules for the given academic year and term. The user needs to provide a valid authentication token (JWT) to access this endpoint. Additionally, administrative privileges are required to use this endpoint successfully. The schedule data or configuration required for term generation should be included in the request body.`
+
+**Example Request:**
+
+```
+POST /schedules/2023/fall/generate HTTP/1.1
+Host: example-api.com
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoiMTIzNDU2Nzg5MCIsImFkbWluIjp0cnVlLCJpYXQiOjE2MzE4ODMzNjksImV4cCI6MTYzMTg4Njk2OSwiYXVkIjoiZXhhbXBsZS1hcGkiLCJpc3MiOiJleGFtcGxlLWFwaSIsInN1YiI6ImV4YW1wbGVfdXNlciJ9.FHJhGKQ6b4liP2E-8xw-HUNdbm9AhNDeJ3pHeKf4scw
+Content-Type: application/json
+
+{
+  “courses”: [
+    {
+      “course”: “ECE471”,
+      “peng”: true,
+      “prerequisites”: [[“ECE310”],[“CSC115”, “CSC116”],...],
+      “corequisites”: [,],
+      “pre_enroll”: 65,
+      “min_enroll”: 5,
+      “hours”: [3, 1.5, 0],
+    },
+    ...
+  ],
+  “classrooms”: [
+    {
+      “building”: “ECS”,
+      “room”: “123”,
+      “capacity”: 150,
+    },
+    ...
+  ],
+  “professors”: [
+    {
+      “name”: “Rich Little”,
+      “peng”: true,
+      “max_courses”: 5,
+      “course_pref”: [“CSC110”, “CSC230”,...],
+      “time_pref”: {
+        “M”: [[“08:30”, “16:00”],],
+        “T”: [[“08:30”, “16:00”],],
+        “W”: [[“08:30”, “16:00”],],
+        “R”: [[“08:30”, “16:00”],],
+        “F”: [[“08:30”, “10:30”], [“12:00”, “16:00”]],
+      }
+    },
+    ...
+  ]
+}
+```
+
+**Example Response:**
+
+```
+HTTP/1.1 200 OK
+Content-Type: application/json
+
+{
+  “schedule”:[
+    {
+      “course”: “CSC110”,
+      “sections”: [
+        {
+          "num": “A01”,
+	    “building”: “ECS”,
+          “room”: “125”,
+     	    “professor”: “Rich Little”,
+	    “days”: [“M”, ”R”],
+	    “start_time”: “08:30”, // 24hr time
+	    “end_time”: “09:50”,
+          “num_seats”: 60,
+	  },
+	  {
+	    "num": “A02”,
+	    “building”: “ECS”,
+  	    “room”: “123”,
+	    “professor”: “Nishant Mehta”,
+	    “days”: [“M”, “R”],
+	    “start_time”: “10:00”,
+	    “end_time”: “11:20”,
+          “num_seats”: 60,
+	  },
+	],
+    },
+    ...
+  ]
+}
+
+
 ```
 
 For more endpoint examples, please contact someone from our backend team, or refer to the Company SRS document.
@@ -236,4 +323,6 @@ This project is licensed under the [MIT License](LICENSE).
 
 Contact the backend team for Company 2 :)
 
-**README.md last Updated 2023-06-12**
+~~**README.md last Updated 2023-06-12**~~
+
+**README.md last Updated 2023-07-30**
