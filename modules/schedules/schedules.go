@@ -60,7 +60,7 @@ type Frontend_Request struct {
 type Algs1_Request struct {
 	Year       string                  `json:"year"`
 	Term       string                  `json:"term"`
-	Users      []users.User            `json:"users"`
+	Professors []users.User            `json:"professors"`
 	Courses    []CoursesWithCapacities `json:"courses"`
 	Classrooms []classrooms.Classroom  `json:"classrooms"`
 }
@@ -303,7 +303,7 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	var new_algs1_request Algs1_Request
 	new_algs1_request.Year = year
 	new_algs1_request.Term = term
-	new_algs1_request.Users = users_list
+	new_algs1_request.Professors = users_list
 	new_algs1_request.Courses = final_course
 	new_algs1_request.Classrooms = classrooms_list
 
