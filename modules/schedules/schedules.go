@@ -80,7 +80,7 @@ type CoursesWithCapacities struct {
 	Course        string     `json:"course" bson:"course"`
 	Peng          bool       `json:"peng" bson:"peng"`
 	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
-	CoRequisites  []string   `json:"corequisites" bson:"corequisites"`
+	CoRequisites  [][]string `json:"corequisites" bson:"corequisites"`
 	Pre_enroll    int        `json:"pre_enroll" bson:"pre_enroll"`
 	Min_enroll    int        `json:"min_enroll" bson:"min_enroll"`
 	Hours         [3]int     `json:"hours" bson:"hours"`
