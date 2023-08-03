@@ -18,7 +18,7 @@ type Course struct {
 	ShortHand     string     `json:"shorthand" bson:"shorthand"`
 	Name          string     `json:"name" bson:"name"`
 	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
-	CoRequisites  []string   `json:"corequisites" bson:"corequisites"`
+	CoRequisites  [][]string `json:"corequisites" bson:"corequisites"`
 	TermsOffered  []string   `json:"terms_offered" bson:"terms_offered"`
 }
 
