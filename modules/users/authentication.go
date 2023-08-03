@@ -62,6 +62,11 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 	claims["authorized"] = true
 	claims["email"] = user.Email
 	claims["isAdmin"] = user.IsAdmin
+	if user.IsAdmin {
+		claims["userType"] = "admin"
+	} else {
+		claims["userType"] = "prof"
+	}
 
 	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET")))
 	if err != nil {
@@ -72,7 +77,7 @@ func SignIn(w http.ResponseWriter, r *http.Request, collection *mongo.Collection
 
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"jwt": tokenString})
+	json.NewEncoder(w).Encode(map[string]string{"jwt": tokenString, "userType": claims["userType"].(string), "token": tokenString})
 
 	// Uncomment the follow line for debugging
 	// logger.Info("Signin function completed.")

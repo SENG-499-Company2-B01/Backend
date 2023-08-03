@@ -197,8 +197,8 @@ func UpdateClassroom(w http.ResponseWriter, r *http.Request, collection *mongo.C
 	if !exists {
 		// If the classroom doesn't exist,
 		// return a not found response
-		logger.Error(fmt.Errorf("classroom not found"), http.StatusInternalServerError)
-		http.Error(w, "Classroom not found.", http.StatusInternalServerError)
+		logger.Error(fmt.Errorf("classroom not found"), http.StatusBadRequest)
+		http.Error(w, "Classroom not found.", http.StatusBadRequest)
 		return
 	}
 
