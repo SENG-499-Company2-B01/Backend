@@ -20,7 +20,7 @@ SENG265,Software Development Methods,"[fall, spring, summer]",1.5,"[[CSC115],[CS
 STAT260,Introduction to Probability and Statistics I,"[fall, spring, summer]",1.5,"[[MATH101]]"
 CSC225,Algorithms and Data Structures I,"[fall, spring, summer]",1.5,"[[CSC115:MATH122],[CSC116:MATH122]]"
 ECE310,Digital Signal Processing I,"[spring, summer]",1.5,"[[ECE260]]"
-ECON180 ,Introduction to Economics and Financial Project Evaluation,"[fall, spring, summer]",1.5,"[[MATH101]]"
+ECON180,Introduction to Economics and Financial Project Evaluation,"[fall, spring, summer]",1.5,"[[MATH101]]"
 SENG275,Software Testing,"[spring, summer]",1.5,"[[SENG265]]"
 SENG310,Human Computer Interaction,"[fall, spring, summer]",1.5,"[[SENG265]]"
 ECE363,Communication Networks,"[spring]",1.5,"[[ECE255],[CSC230]]"
