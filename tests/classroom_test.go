@@ -16,8 +16,7 @@ func TestInsertClassroom(t *testing.T) {
 	var nClassroom = classrooms.Classroom{}
 	setupRoutes(router)
 
-	nClassroom.Shorthand = "Test"
-	nClassroom.Building = "Test Building"
+	nClassroom.Building = "Test1"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "12"
 
@@ -31,7 +30,7 @@ func TestInsertClassroom(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 	print(response.Code)
-	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
+	filter := bson.M{"building": nClassroom.Building, "room": nClassroom.Room_number}
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter)
 	})
@@ -43,13 +42,11 @@ func TestGetClassrooms(t *testing.T) {
 	var n2Classroom = classrooms.Classroom{}
 	setupRoutes(router)
 
-	n1Classroom.Shorthand = "Test"
-	n1Classroom.Building = "Test Building"
+	n1Classroom.Building = "Test2"
 	n1Classroom.Capacity = 100
 	n1Classroom.Room_number = "12"
 
-	n2Classroom.Shorthand = "Test2"
-	n2Classroom.Building = "Test Building"
+	n2Classroom.Building = "Test3"
 	n2Classroom.Capacity = 100
 	n2Classroom.Room_number = "12"
 
@@ -78,8 +75,8 @@ func TestGetClassrooms(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	filter1 := bson.M{"shorthand": n1Classroom.Shorthand, "room_number": n1Classroom.Room_number}
-	filter2 := bson.M{"shorthand": n2Classroom.Shorthand, "room_number": n2Classroom.Room_number}
+	filter1 := bson.M{"building": n1Classroom.Building, "room": n1Classroom.Room_number}
+	filter2 := bson.M{"shorthand": n2Classroom.Building, "room": n2Classroom.Room_number}
 
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter1)
@@ -92,8 +89,8 @@ func TestGetClassroom(t *testing.T) {
 	var nClassroom = classrooms.Classroom{}
 
 	setupRoutes(router)
-	nClassroom.Shorthand = "Test"
-	nClassroom.Building = "Test Building"
+
+	nClassroom.Building = "Test4"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "2"
 
@@ -107,14 +104,14 @@ func TestGetClassroom(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, insert_response.Code)
 	}
 
-	get, _ := http.NewRequest("GET", "/classrooms/Test/2", nil)
+	get, _ := http.NewRequest("GET", "/classrooms/Test4/2", nil)
 	get_response := executeRequest(get)
 
 	if get_response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, get_response.Code)
 	}
 
-	filter1 := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
+	filter1 := bson.M{"building": nClassroom.Building, "room": nClassroom.Room_number}
 
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter1)
@@ -126,8 +123,8 @@ func TestDeleteClassroom(t *testing.T) {
 	var nClassroom = classrooms.Classroom{}
 
 	setupRoutes(router)
-	nClassroom.Shorthand = "Test"
-	nClassroom.Building = "Test Building"
+
+	nClassroom.Building = "Test5"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "4"
 
@@ -141,14 +138,14 @@ func TestDeleteClassroom(t *testing.T) {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	req, _ = http.NewRequest("DELETE", "/classrooms/Test/4", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("DELETE", "/classrooms/Test5/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
+	filter := bson.M{"building": nClassroom.Building, "room": nClassroom.Room_number}
 
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter)
@@ -160,8 +157,7 @@ func TestUpdateClassroom(t *testing.T) {
 	var nClassroom = classrooms.Classroom{}
 
 	setupRoutes(router)
-	nClassroom.Shorthand = "Test"
-	nClassroom.Building = "Test Building"
+	nClassroom.Building = "Test6"
 	nClassroom.Capacity = 100
 	nClassroom.Room_number = "4"
 
@@ -179,17 +175,17 @@ func TestUpdateClassroom(t *testing.T) {
 
 	n2Classroom = nClassroom
 
-	n2Classroom.Building = "Test Building updated"
+	n2Classroom.Capacity = 98
 	requestBody, _ = json.Marshal(n2Classroom)
 	payload = []byte(requestBody)
-	req, _ = http.NewRequest("PUT", "/classrooms/Test/4", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("PUT", "/classrooms/Test6/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
 	}
 
-	req, _ = http.NewRequest("GET", "/classrooms/Test/4", bytes.NewBuffer(payload))
+	req, _ = http.NewRequest("GET", "/classrooms/Test6/4", bytes.NewBuffer(payload))
 	response = executeRequest(req)
 	if response.Code != http.StatusOK {
 		t.Errorf("Expected response code %d. Got %d\n", http.StatusOK, response.Code)
@@ -199,11 +195,11 @@ func TestUpdateClassroom(t *testing.T) {
 
 	json.Unmarshal([]byte(response.Body.String()), &getClassroom)
 
-	if getClassroom.Building != "Test Building updated" {
-		t.Errorf("Expected response body to be %s. Got %s\n", "Test Building updated", getClassroom.Building)
+	if getClassroom.Capacity != 98 {
+		t.Errorf("Expected response body to be %d. Got %d\n", 98, getClassroom.Capacity)
 	}
 
-	filter := bson.M{"shorthand": nClassroom.Shorthand, "room_number": nClassroom.Room_number}
+	filter := bson.M{"building": nClassroom.Building, "room": nClassroom.Room_number}
 	t.Cleanup(func() {
 		client.Database("schedule_db").Collection("classrooms").DeleteOne(context.TODO(), filter)
 	})

@@ -33,7 +33,54 @@ def parse_prereq(input):
     for i in range(len(output)): 
         output[i] = output[i].split(":") 
 
-    return output
+    return output 
+
+def add_course(schedule,row,term_count,df,index): 
+
+    course = row['Course']  
+    section_num = row['Num'] 
+    building = row['Building'] 
+    professor = row['Professor'] 
+    num_seats = int(row['Num_Seats'])
+    num_registered = int(row['Enrolled'])
+
+    # We simply do not have these values currently in our dataset
+    start_time = "" 
+    end_time = "" 
+
+    course_dict = {} 
+    course_dict['course'] = course 
+    course_dict['sections'] = [{"num":section_num,"building":building, 
+                                "professor":professor,"days":[], 
+                                "num_seats":num_seats,"num_registered":num_registered, 
+                                "start_time":start_time,"end_time":end_time}] 
+    
+    # Check if there is an A02 section, and if so add it to the sections JSON
+    try:
+        new_row = df.iloc[index+1]  
+
+        if str(new_row['Num']) == "A02": 
+
+            course = new_row['Course']  
+            section_num = new_row['Num'] 
+            building = new_row['Building'] 
+            professor = new_row['Professor'] 
+            num_seats = int(new_row['Num_Seats'])
+            num_registered = int(new_row['Enrolled'])
+
+            course_dict['sections'].append({"num":section_num,"building":building, 
+                                "professor":professor,"days":[], 
+                                "num_seats":num_seats,"num_registered":num_registered, 
+                                "start_time":start_time,"end_time":end_time})
+
+
+    except:  
+        print("INFO ... End of classes.csv file")
+
+
+    schedule["terms"][term_count]["courses"].append(course_dict) 
+
+    return schedule
 
 
 def load_users(coll): 
@@ -55,9 +102,8 @@ def load_users(coll):
         user = {} 
         user['username'] = row['Firstname'] + '.' + row['Lastname'] 
         user['email'] = row['Email'] 
-        user['password'] = gen_pw(user['username'],pw_secret)
-        user['firstname'] = row['Firstname'] 
-        user['lastname'] = row['Lastname'] 
+        user['password'] = gen_pw(user['username'],pw_secret) 
+        user['name'] = row['Firstname'] + ' ' + row['Lastname']
 
         if user['username'].lower() == admin_1 or user['username'].lower() == admin_2:
             user['isAdmin'] = True
@@ -66,13 +112,14 @@ def load_users(coll):
 
         user['peng'] = (row['Peng'] == 1) 
         user['pref_approved'] = False
-        user['max_courses'] = None
+        user['max_courses'] = 6
         # Convert qualifications string to array of strings 
       
         string_qualifications = row['Credentials'].replace("[","").replace("]","")
         qualifications = string_qualifications.split(",")
         user['course_pref'] = qualifications 
-        user['available'] = pref_dict 
+        user['time_pref'] = pref_dict  
+        user['available'] = pref_dict
 
         coll.insert_one(user)
 
@@ -91,7 +138,13 @@ def load_courses(coll):
         course = {} 
         course['shorthand'] = row['Course'] 
         course['name'] = row['Name'] 
-        course['terms_offered'] = row['Offered'].replace("[","").replace("]","").split(",")
+        temp_terms = row['Offered'].replace("[","").replace("]","").split(",") 
+
+        # Remove odd whitespaces
+        for i in range(len(temp_terms)): 
+            temp_terms[i] = temp_terms[i].replace(" ","")
+
+        course['terms_offered'] = temp_terms
         course['prerequisites'] = parse_prereq(row['Prerequisites']) 
 
         coll.insert_one(course) 
@@ -108,17 +161,55 @@ def load_classrooms(coll):
 
     for index, row in classrooms_df.iterrows(): 
 
-        classroom = {} 
-        classroom['shorthand'] = row['Shorthand'] 
-        classroom['building'] = row['Building Name'] 
+        classroom = {}
+        classroom['building'] = row['Shorthand'] 
         classroom['capacity'] = row['Capacity'] 
-        classroom['room_number'] = row['Room Number'] 
-        classroom['Equipment'] = []  
+        classroom['room'] = row['Room Number'] 
 
         coll.insert_one(classroom)
 
-    return
+    return 
 
+def load_old_schedules(coll): 
+
+    if check_if_not_empty(coll,'prev_schedules'): 
+        return 
+    
+    schedules_df = pd.read_csv("classes.csv") 
+    schedule = {} 
+    prev_year = 2008 
+    prev_term = "summer" 
+    schedule['year'] = prev_year 
+    schedule['terms'] = [{"term":prev_term,"courses":[]}] 
+    term_count = 0
+
+    for index, row in schedules_df.iterrows(): 
+
+        year = row['Year']  
+        term = row['Term']
+        
+        if prev_year != year: 
+            coll.insert_one(schedule) 
+            schedule = {} 
+            schedule["year"] = year  
+            schedule["terms"] = [{"term":term,"courses":[]}]
+            prev_year = year  
+            prev_term = term
+            term_count = 0
+
+        
+        if prev_term != term:  
+            term_count += 1 
+            schedule["terms"].append({"term":term,"courses":[]})   
+
+        # Skip A02 Terms since we already have added them via the add_courses function
+        if str(row['Num']) == "A02": 
+            continue
+
+
+        schedule = add_course(schedule,row,term_count,schedules_df,index) 
+    
+    coll.insert_one(schedule)
 
 def db_seed():
 
@@ -133,12 +224,14 @@ def db_seed():
 
     user_collection = db['users']  
     courses_collection = db['courses'] 
-    classrooms_collection = db['classrooms']
+    classrooms_collection = db['classrooms'] 
+    schedules_collection = db['previous_schedules']
 
 
     load_users(user_collection)
     load_courses(courses_collection) 
-    load_classrooms(classrooms_collection)
+    load_classrooms(classrooms_collection) 
+    # load_old_schedules(schedules_collection)
 
 if __name__ == "__main__": 
     db_seed()
