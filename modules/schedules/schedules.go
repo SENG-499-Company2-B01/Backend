@@ -210,6 +210,11 @@ func GenerateSchedule(w http.ResponseWriter, r *http.Request, draft_schedules *m
 	new_algs2_request.Term = strings.ToLower(term)
 	new_algs2_request.Courses = courses_list
 
+	// add course field
+	for i := range new_algs2_request.Courses {
+		new_algs2_request.Courses[i].SetCourse()
+	}
+
 	algs2RequestBody, _ := json.Marshal(new_algs2_request)
 	algs2Payload := []byte(algs2RequestBody)
 	algs2Req, _ := http.Post(algs2_api, "application/json", bytes.NewBuffer(algs2Payload))

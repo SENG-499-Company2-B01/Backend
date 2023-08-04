@@ -16,10 +16,16 @@ import (
 
 type Course struct {
 	ShortHand     string     `json:"shorthand" bson:"shorthand"`
+	Course        string     `json:"course" bson:"-"`
 	Name          string     `json:"name" bson:"name"`
 	Prerequisites [][]string `json:"prerequisites" bson:"prerequisites"`
 	CoRequisites  [][]string `json:"corequisites" bson:"corequisites"`
 	TermsOffered  []string   `json:"terms_offered" bson:"terms_offered"`
+}
+
+// SetCourse - set the course field of Course struct to shorthand
+func (c *Course) SetCourse() {
+	c.Course = c.ShortHand
 }
 
 // CreateCourse - creates a new course in the course DB
@@ -109,6 +115,11 @@ func GetCourses(w http.ResponseWriter, r *http.Request, collection *mongo.Collec
 		return
 	}
 
+	// update course field
+	for i := range courses {
+		courses[i].SetCourse()
+	}
+
 	// Send a response with the retrieved users
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(courses)
@@ -140,6 +151,8 @@ func GetCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Collect
 		http.Error(w, "Error while finding the course.", http.StatusInternalServerError)
 		return
 	}
+
+	result.SetCourse()
 
 	// Send a response
 	w.WriteHeader(http.StatusOK)
@@ -189,6 +202,13 @@ func UpdateCourse(w http.ResponseWriter, r *http.Request, collection *mongo.Coll
 		http.Error(w, "Invalid Course shorthand.", http.StatusBadRequest)
 		return
 	}
+
+	// delete course field
+	_, ok := updateCourse["course"]
+	if ok {
+		delete(updateCourse, "course")
+	}
+
 	update := bson.M{"$set": updateCourse}
 	// Check if course exists
 	filter = bson.D{{"shorthand", courseShortHand}}
